@@ -1,3 +1,5 @@
+package org.firstinspires.ftc.teamcode;
+
 /*
 Copyright (c) 2016 Robert Atkinson
 
@@ -30,9 +32,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import com.qualcomm.ftcrobotcontroller.R;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -85,8 +85,8 @@ import java.util.List;
  */
 
 @Autonomous(name="Concept: Vuforia Navigation", group ="Concept")
-@Disabled
-public class ConceptVuforiaNavigation extends LinearOpMode {
+
+public class VuforiaTestNavigation extends LinearOpMode {
 
     public static final String TAG = "Vuforia Sample";
 
@@ -122,7 +122,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          * and paste it in to your code as the value of the 'vuforiaLicenseKey' field of the
          * {@link Parameters} instance with which you initialize Vuforia.
          */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(R.id.cameraMonitorViewId);
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
 
         //NEW LICENSE
         parameters.vuforiaLicenseKey = "Aa8QUh//////AAAAGZ9BC/SIAU7Gu1UHdrYT9+wUMNbpqvq5t9/yYg7HJVn7ONfybrZGXBrpxU/qti2WJ6eujwPNMMZlXyAG4LnWqD1fiF7feWKKtYOe5PRHj1Ou+8ys0fvVtTzjsYTje9MQSZc57EyjfDyAQn6jxBgs2XU4KRZr99Z2BffnskbpT0VTB5oDhWKC0QOG7HFGJIU7zClusaT8KbENMal8cIoxM8a+Ahijt2+TGB1QfkB2h52NUvmz4XAYQJvZUly/A4ZioqbK1bq0TscNzgWW4I9Dlb7J91sS8Gz+VIg0XkUQXp+x6T+4kr1V766DMc9w7uC0s+x6Hr+lOThwaVHM6BIxZc8rBcVvFG2HvQzJUhJnKW5Q";
