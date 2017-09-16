@@ -11,11 +11,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 /**
- * Created by Duncan on 9/16/2017.
+ * This class is designed to keep track of which column gives bonus points.
+ * It is not designed to track the vuforia targets, it only detects them once.
+ * @author Duncan McKee
+ * @version 1.0.0
  */
 public class ColumnController {
     private VuforiaLocalizer vuforia;
-    private RelicRecoveryVuMark vuMark;
+    public RelicRecoveryVuMark vuMark;
     private VuforiaTrackable relicTemplate;
     private VuforiaTrackables relicTrackables;
 
@@ -41,11 +44,21 @@ public class ColumnController {
         storeColumn();
     }
 
+    /**
+     * This function is designed only to run once during the init phase.
+     * However, it may be useful to have it run later if there is a problem so it is kept as public.
+     */
     public void storeColumn(){
         relicTrackables.activate();
         vuMark = RelicRecoveryVuMark.from(relicTemplate);
         relicTrackables.deactivate();
     }
+
+    /**
+     * A way to keep track of our movements for autonomous for placing boxes in the correct box for bonus points.
+     * @return An int between -1 and 1 to multiply a movement parallel to the Cryptobox.
+     * @throws Exception
+     */
     public int movementMultiplier() throws Exception {
         switch (vuMark){
             case LEFT:
