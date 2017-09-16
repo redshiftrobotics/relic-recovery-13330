@@ -90,16 +90,19 @@ public class PictographIdentification extends LinearOpMode{
                 }
             }
 
-            if(vuMark==RelicRecoveryVuMark.LEFT){
-                telemetry.addData("Pictograph", "Left");
-            }else if(vuMark==RelicRecoveryVuMark.CENTER){
-                telemetry.addData("Pictograph", "Center");
-            }else if(vuMark==RelicRecoveryVuMark.RIGHT){
-                telemetry.addData("Pictograph", "Right");
-            }else if(vuMark==RelicRecoveryVuMark.UNKNOWN){
-                telemetry.addData("Pictograph", "Unknown");
-            }else{
-                telemetry.addData("Pictograph", "Not Found");
+            switch (vuMark){
+                case LEFT:
+                    telemetry.addData("Pictograph", "Left");
+                    break;
+                case CENTER:
+                    telemetry.addData("Pictograph", "Center");
+                    break;
+                case RIGHT:
+                    telemetry.addData("Pictograph", "Right");
+                    break;
+                default:
+                    telemetry.addData("Pictograph", "Unknown");
+                    break;
             }
 
             telemetry.addData("Position", pos);
