@@ -59,5 +59,6 @@ public class Timer {
         loopTime = System.currentTimeMillis() - lastTime;
         lastTime = System.currentTimeMillis();
     }
+
     //endregion
 }
