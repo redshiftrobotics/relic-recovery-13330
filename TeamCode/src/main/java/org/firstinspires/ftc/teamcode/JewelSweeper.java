@@ -25,13 +25,13 @@ public class JewelSweeper extends LinearOpMode{
         if(cs.red()>cs.blue()){
             if(team=="red"){
                 telemetry.addData("Move", "Backward");
-            }else{
+            }else if(team=="blue"){
                 telemetry.addData("Move", "Forward");
             }
         }else if(cs.blue()>cs.red()){
             if(team=="red"){
                 telemetry.addData("Move", "Forward");
-            }else{
+            }else if(team=="blue"){
                 telemetry.addData("Move", "Backward");
             }
         }
