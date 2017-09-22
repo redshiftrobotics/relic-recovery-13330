@@ -37,7 +37,7 @@ public class GroundLineChecker extends LinearOpMode{
         rightDrive.setPower(0.0);
 
         Thread.sleep(1000);
-        
+
         leftDrive.setPower(-1.0);
         rightDrive.setPower(-1.0);
 
