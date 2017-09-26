@@ -24,6 +24,6 @@ public class SoccerBot extends OpMode {
     @Override
     public void loop() {
         leftDrive.setPower(Range.clip(-gamepad1.right_stick_y+gamepad1.right_stick_x,-1.0,1.0));
-        rightDrive.setPower(Range.clip(gamepad1.right_stick_y+gamepad1.right_stick_x,-1.0,1.0));
+        rightDrive.setPower(Range.clip(-gamepad1.right_stick_y-gamepad1.right_stick_x,-1.0,1.0));
     }
 }
