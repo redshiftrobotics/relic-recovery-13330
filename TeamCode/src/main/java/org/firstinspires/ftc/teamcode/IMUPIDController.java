@@ -45,6 +45,12 @@ public class IMUPIDController {
         float angle = imu.getAngularRotationX();
         lastError = P;
 
+        System.out.println("Angle is " + angle);
+        System.out.println("Target is " + target);
+
+        //angle = 359
+        //target = 1
+
         if (angle + 360 - target <= 180) {
             P = (angle -  target + 360);
         } else if (target + 360 - angle <= 180) {
@@ -52,6 +58,7 @@ public class IMUPIDController {
         } else if (angle -  target <= 180) {
             P = (angle -  target);
         }
+        System.out.println("P is" + P);
     }
 
     public void calculateI() {
@@ -76,6 +83,19 @@ public class IMUPIDController {
         this.pConst = pTuning;
         this.iConst = iTuning;
         this.dConst = dTuning;
+    }
+
+    public void setTarget(float targetAngle) {
+        this.target = targetAngle;
+    }
+
+    public void clearData() {
+        this.P = 0;
+        this.I = 0;
+        this.D = 0;
+        this.lastError = 0;
+        this.dT = 0;
+        this.target = 0;
     }
 }
 

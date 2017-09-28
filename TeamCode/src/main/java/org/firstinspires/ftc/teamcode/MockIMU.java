@@ -16,7 +16,7 @@ public class MockIMU implements IMU {
     @Override
     public float getAngularRotationX() {
         if (currPoint < testData.length) {
-            return testData[currPoint];
+            return testData[currPoint++];
         }
         return Float.POSITIVE_INFINITY;
     }
