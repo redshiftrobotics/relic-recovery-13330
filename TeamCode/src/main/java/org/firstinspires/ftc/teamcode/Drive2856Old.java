@@ -99,7 +99,7 @@ public class Drive2856Old extends OpMode {
     }
 
     void Drive(){
-        leftDrive.setPower(Range.clip(-gamepad1.right_stick_y+gamepad1.right_stick_x,-1.0,1.0));
-        rightDrive.setPower(Range.clip(gamepad1.right_stick_y+gamepad1.right_stick_x,-1.0,1.0));
+        leftDrive.setPower(Range.clip((-gamepad1.right_stick_y*0.7)+(gamepad1.right_stick_x*0.3),-1.0,1.0));
+        rightDrive.setPower(Range.clip((gamepad1.right_stick_y*0.7)+(gamepad1.right_stick_x*0.3),-1.0,1.0));
     }
 }
