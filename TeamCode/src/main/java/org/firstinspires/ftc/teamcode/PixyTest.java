@@ -17,7 +17,14 @@ public class PixyTest extends OpMode {
 
     @Override
     public void loop() {
+        pixyCam.updateData();
         telemetry.addData("Name:", pixyCam.getDeviceName());
+        telemetry.addData("Sync", pixyCam.data.sync);
+        telemetry.addData("Signature", pixyCam.data.signature);
+        telemetry.addData("X Center", pixyCam.data.xCenter);
+        telemetry.addData("Y Center", pixyCam.data.yCenter);
+        telemetry.addData("Width", pixyCam.data.width);
+        telemetry.addData("Height", pixyCam.data.height);
         telemetry.update();
     }
 }

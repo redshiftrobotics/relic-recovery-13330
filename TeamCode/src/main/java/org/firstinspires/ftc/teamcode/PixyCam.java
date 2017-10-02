@@ -18,6 +18,8 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
 
     public final static I2cAddr ADDRESS_I2C_DEFAULT = I2cAddr.create8bit(0x54);
 
+    public PixyObject data;
+
     public enum Register{
         FIRST(0),
         SYNC(0x00),
@@ -61,13 +63,39 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         return TypeConversion.byteArrayToShort(deviceClient.read(reg.bVal, 4));
     }
 
+    private void sendCommunication(){
+        writeShort(Register.SYNC,(short)1);
+    }
+
     public short getSyncRaw(){
         return readShort(Register.SYNC);
     }
 
-    public double getSync(){
-        short dataRaw = getSyncRaw();
+    public short getChecksumRaw(){
+        return  readShort(Register.CHECKSUM);
+    }
 
+    public short getSignatureRaw(){
+        return  readShort(Register.SIGNATURE);
+    }
+
+    public short getXCenterRaw(){
+        return  readShort(Register.X_CENTER);
+    }
+
+    public short getYCenterRaw(){
+        return  readShort(Register.Y_CENTER);
+    }
+
+    public short getWidthRaw(){
+        return  readShort(Register.WIDTH);
+    }
+
+    public short getHeightRaw(){
+        return  readShort(Register.HEIGHT);
+    }
+
+    public double filterRaw(short dataRaw){
         // The first 3 bits are alert bits that we don't care about here. We need to force them to
         // be 0s or 1s if the number is positive or negative depending on the sign
         if((dataRaw & 0x1000) == 0x1000) // Negative
@@ -79,6 +107,20 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         return  dataRaw / 16.0;
     }
 
+    public void updateData(){
+        sendCommunication();
+        data.sync = filterRaw(getSyncRaw());
+        data.signature = filterRaw(getSignatureRaw());
+        data.xCenter = filterRaw(getXCenterRaw());
+        data.yCenter = filterRaw(getYCenterRaw());
+        data.width = filterRaw(getWidthRaw());
+        data.height = filterRaw(getHeightRaw());
+    }
+
+    public PixyObject getData(){
+        return data;
+    }
+
     public PixyCam(I2cDeviceSynch deviceClient){
         super(deviceClient, true);
 
@@ -87,6 +129,8 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
 
         super.registerArmingStateCallback(false);
         this.deviceClient.engage();
+
+        data = new PixyObject();
     }
 
     @Override

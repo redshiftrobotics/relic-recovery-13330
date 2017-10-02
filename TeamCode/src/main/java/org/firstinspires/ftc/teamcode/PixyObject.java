@@ -5,11 +5,12 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public class PixyObject {
-    int signature = 0;
-    int xCenter = 0; //xCenter overall is 160
-    int yCenter = 0; //yCenter overall is 100
-    int width = 0; //width max is 320
-    int height = 0; //height max is 200
+    public double sync = 0;
+    public double signature = 0;
+    public double xCenter = 0; //xCenter overall is 160
+    public double yCenter = 0; //yCenter overall is 100
+    public double width = 0; //width max is 320
+    public double height = 0; //height max is 200
 
     void UpdateObject(byte[] cache){
         signature = cache[7] * 256 + ((cache[6] < 0) ? cache[6] + 256 : cache[6]);
