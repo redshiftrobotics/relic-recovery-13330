@@ -6,6 +6,7 @@ package org.firstinspires.ftc.teamcode;
 
 public class PixyObject {
     public double sync = 0;
+    public double checksum = 0;
     public double signature = 0;
     public double xCenter = 0; //xCenter overall is 160
     public double yCenter = 0; //yCenter overall is 100

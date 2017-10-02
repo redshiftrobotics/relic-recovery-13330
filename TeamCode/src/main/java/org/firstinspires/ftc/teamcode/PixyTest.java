@@ -20,6 +20,7 @@ public class PixyTest extends OpMode {
         pixyCam.updateData();
         telemetry.addData("Name:", pixyCam.getDeviceName());
         telemetry.addData("Sync", pixyCam.data.sync);
+        telemetry.addData("Checksum", pixyCam.data.checksum);
         telemetry.addData("Signature", pixyCam.data.signature);
         telemetry.addData("X Center", pixyCam.data.xCenter);
         telemetry.addData("Y Center", pixyCam.data.yCenter);

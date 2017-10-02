@@ -110,6 +110,7 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
     public void updateData(){
         sendCommunication();
         data.sync = filterRaw(getSyncRaw());
+        data.checksum = filterRaw(getChecksumRaw());
         data.signature = filterRaw(getSignatureRaw());
         data.xCenter = filterRaw(getXCenterRaw());
         data.yCenter = filterRaw(getYCenterRaw());
