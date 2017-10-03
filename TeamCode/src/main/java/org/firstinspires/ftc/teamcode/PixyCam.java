@@ -60,11 +60,20 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
     }
 
     protected short readShort(Register reg){
-        return TypeConversion.byteArrayToShort(deviceClient.read(reg.bVal, 4));
+        return TypeConversion.byteArrayToShort(deviceClient.read(reg.bVal, 2));
     }
 
     private void sendCommunication(){
         writeShort(Register.SYNC,(short)1);
+    }
+
+    public boolean checkZero(){
+        int zeroCheck = getSyncRaw() + getChecksumRaw() + getSignatureRaw() + getXCenterRaw() + getYCenterRaw() + getHeightRaw() + getWidthRaw();
+        return  zeroCheck != 0;
+    }
+
+    public short readPixy (){
+        return TypeConversion.byteArrayToShort(deviceClient.read(0x54, 2));
     }
 
     public short getSyncRaw(){
@@ -104,7 +113,7 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
             dataRaw &= 0x1FFF;
 
         // Multiple by least significant bit (2^-4 = 1/16) to scale
-        return  dataRaw / 16.0;
+        return  dataRaw;
     }
 
     public void updateData(){
@@ -136,7 +145,7 @@ public class PixyCam extends I2cDeviceSynchDevice<I2cDeviceSynch> {
 
     @Override
     protected synchronized boolean doInitialize() {
-        return false; //Need to update soon to add actual check, when fully implemented
+        return true; //Need to update soon to add actual check, when fully implemented
     }
 
     @Override

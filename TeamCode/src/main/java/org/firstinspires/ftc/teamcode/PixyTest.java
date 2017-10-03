@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**
  * Created by Duncan on 10/1/2017.
  */
-
+@Autonomous(name="PixySensor")
 public class PixyTest extends OpMode {
 
     PixyCam pixyCam;
@@ -18,7 +19,9 @@ public class PixyTest extends OpMode {
     @Override
     public void loop() {
         pixyCam.updateData();
-        telemetry.addData("Name:", pixyCam.getDeviceName());
+        telemetry.addData("Name", pixyCam.getDeviceName());
+        telemetry.addData("Active", pixyCam.checkZero());
+        telemetry.addData("Data", pixyCam.readPixy());
         telemetry.addData("Sync", pixyCam.data.sync);
         telemetry.addData("Checksum", pixyCam.data.checksum);
         telemetry.addData("Signature", pixyCam.data.signature);
