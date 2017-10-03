@@ -38,23 +38,6 @@ public class PixyCamSynch extends LinearOpMode {
 
             if(zeroCheck!=0&&found){
                 telemetry.addData("Start", start);
-                /*telemetry.addData("Test",
-                        ((readCache[start+0] < 0) ? readCache[start+0] + 256 : readCache[start+0]) + "," +
-                                ((readCache[start+1] < 0) ? readCache[start+1] + 256 : readCache[start+1]) + "," +
-                                ((readCache[start+2] < 0) ? readCache[start+2] + 256 : readCache[start+2]) + "," +
-                                ((readCache[start+3] < 0) ? readCache[start+3] + 256 : readCache[start+3]) + "," +
-                                ((readCache[start+4] < 0) ? readCache[start+4] + 256 : readCache[start+4]) + "," +
-                                ((readCache[start+5] < 0) ? readCache[start+5] + 256 : readCache[start+5]) + "," +
-                                ((readCache[start+6] < 0) ? readCache[start+6] + 256 : readCache[start+6]) + "," +
-                                ((readCache[start+7] < 0) ? readCache[start+7] + 256 : readCache[start+7]) + "," +
-                                ((readCache[start+8] < 0) ? readCache[start+8] + 256 : readCache[start+8]) + "," +
-                                ((readCache[start+9] < 0) ? readCache[start+9] + 256 : readCache[start+9]) + "," +
-                                ((readCache[start+10] < 0) ? readCache[start+10] + 256 : readCache[start+10]) + "," +
-                                ((readCache[start+11] < 0) ? readCache[start+11] + 256 : readCache[start+11]) + "," +
-                                ((readCache[start+12] < 0) ? readCache[start+12] + 256 : readCache[start+12]) + "," +
-                                ((readCache[start+13] < 0) ? readCache[start+13] + 256 : readCache[start+13]) + "," +
-                                ((readCache[start+14] < 0) ? readCache[start+14] + 256 : readCache[start+14]) + "," +
-                                ((readCache[start+15] < 0) ? readCache[start+15] + 256 : readCache[start+15]));*/
                 telemetry.addData("Sync", Integer.toHexString((readCache[start+0] < 0) ? readCache[start+0] + 256 : readCache[start+0]) + Integer.toHexString((readCache[start+1] < 0) ? readCache[start+1] + 256 : readCache[start+1]));
                 telemetry.addData("Sync2", Integer.toHexString((readCache[start+2] < 0) ? readCache[start+2] + 256 : readCache[start+2]) + Integer.toHexString((readCache[start+3] < 0) ? readCache[start+3] + 256 : readCache[start+3]));
                 telemetry.addData("4", readCache[start+4]);
@@ -77,15 +60,6 @@ public class PixyCamSynch extends LinearOpMode {
                 telemetry.addData(" ", " ");
             }
             found = false;
-
-            /*if((readCache[1]==-86&&readCache[2]==85)){
-                pixyObject.UpdateObject(readCache);
-                telemetry.addData("Tracking", "True");
-                telemetry.addData("Sig", pixyObject.signature + ", x: " + pixyObject.xCenter + ", y: " + pixyObject.yCenter + ", w: " + pixyObject.width + ", h: " + pixyObject.height);
-            }else if(zeroCheck==0){
-                telemetry.addData("Tracking", "False");
-                telemetry.addData("Sig", pixyObject.signature + ", x: " + pixyObject.xCenter + ", y: " + pixyObject.yCenter + ", w: " + pixyObject.width + ", h: " + pixyObject.height);
-            }*/
 
             telemetry.update();
         }
