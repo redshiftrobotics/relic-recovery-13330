@@ -24,15 +24,32 @@ public class MecanumTeleop extends OpMode{
         //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
+    /*
+    Motor layout:
+
+
+
+    fl fr
+
+    bl br
+     */
+
+    float frontLeftPower, frontRightPower, backLeftPower, backRightPower;
+
     @Override
     public void loop() {
         drive();
     }
 
-    private void drive(){
-        frontLeft.setPower(gamepad1.right_stick_y-gamepad1.right_stick_x+gamepad1.left_stick_x);
-        frontRight.setPower(gamepad1.right_stick_y-gamepad1.right_stick_x-gamepad1.left_stick_x);
-        backLeft.setPower(gamepad1.right_stick_y+gamepad1.right_stick_x+gamepad1.left_stick_x);
-        backRight.setPower(gamepad1.right_stick_y+gamepad1.right_stick_x-gamepad1.left_stick_x);
+    private void drive() {
+        frontLeftPower = gamepad1.right_stick_y - gamepad1.right_stick_x + gamepad1.left_stick_x;
+        frontRightPower = gamepad1.right_stick_y -gamepad1.right_stick_x - gamepad1.left_stick_x;
+        backLeftPower = gamepad1.right_stick_y + gamepad1.right_stick_x + gamepad1.left_stick_x;
+        backRightPower = gamepad1.right_stick_y + gamepad1.right_stick_x - gamepad1.left_stick_x;
+
+        frontLeft.setPower(frontLeftPower);
+        frontRight.setPower(frontRightPower);
+        backLeft.setPower(backLeftPower);
+        backRight.setPower(backRightPower);
     }
 }
