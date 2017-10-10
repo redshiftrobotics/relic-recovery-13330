@@ -20,13 +20,18 @@ public class TheAlgorithm extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        frontLeft = hardwareMap.dcMotor.get("frontLeft");
-        backLeft = hardwareMap.dcMotor.get("backLeft");
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        backRight = hardwareMap.dcMotor.get("backRight");
+        frontLeft = hardwareMap.dcMotor.get("m0");
+        backLeft = hardwareMap.dcMotor.get("m1");
+        frontRight = hardwareMap.dcMotor.get("m2");
+        backRight = hardwareMap.dcMotor.get("m3");
 
         waitForStart();
 
-
+        while(opModeIsActive()){
+            xPos = frontLeft.getCurrentPosition();
+            yPos = frontRight.getCurrentPosition();
+            telemetry.addData("Position", "(" + xPos + ", " + yPos + ")");
+            telemetry.update();
+        }
     }
 }

@@ -32,19 +32,24 @@ public class PixyCamTrack extends LinearOpMode {
 
     float distance = 0;
     float offset = 0;
-    static final float distanceMult = 0.01f;
-    static final float offsetMult = 0.01f;
+    static final float distanceMult = 0.005f;
+    static final float offsetMult = 0.005f;
 
-    DcMotor leftDrive;
-    DcMotor rightDrive;
+    DcMotor FLDrive;
+    DcMotor BLDrive;
+    DcMotor FRDrive;
+    DcMotor BRDrive;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
         pixy = hardwareMap.i2cDeviceSynch.get("pixyCam");
         pixy.engage();
 
-        leftDrive = hardwareMap.dcMotor.get("leftDrive");
-        rightDrive = hardwareMap.dcMotor.get("rightDrive");
+        FLDrive = hardwareMap.dcMotor.get("FLDrive");
+        BLDrive = hardwareMap.dcMotor.get("BLDrive");
+        FRDrive = hardwareMap.dcMotor.get("FRDrive");
+        BRDrive = hardwareMap.dcMotor.get("BRDrive");
 
         telemetry.setAutoClear(true);
 
@@ -74,8 +79,10 @@ public class PixyCamTrack extends LinearOpMode {
             offset = (SCREEN_WIDTH / 2) - xCenter;
             distance = ((STANDARD_WIDTH - width) + (STANDARD_HEIGHT - height))/2;
 
-            leftDrive.setPower(Range.clip(distance * distanceMult + offset * offsetMult,-1,1));
-            rightDrive.setPower(Range.clip(distance * distanceMult - offset * offsetMult,-1,1));
+            FLDrive.setPower(Range.clip(distance * distanceMult + offset * offsetMult, -1, 1));
+            BLDrive.setPower(Range.clip(distance * distanceMult + offset * offsetMult, -1, 1));
+            FRDrive.setPower(Range.clip(distance * distanceMult - offset * offsetMult, -1, 1));
+            BRDrive.setPower(Range.clip(distance * distanceMult - offset * offsetMult, -1, 1));
 
             telemetry.update();
         }
