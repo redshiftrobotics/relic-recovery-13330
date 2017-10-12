@@ -53,13 +53,13 @@ public class IMUPIDControllerTest extends TestCase {
                 // (359 - (360  + 1)) = -2
                 // -2  + (-2 * dT) + -2/dT
                 // -2 - 20 -0.2 = -22.2
-               new testCase().target(1).expect(22.2f),
+               new testCase().target(1).expect(-22.2f),
 
                 // input angle: 1
                 //target: 359
                 // (360 + 1) - 359 = 361 - 359 = 2
                 // 2 + (2 * dT) + 2/dT = 2 + 20 + 0.2 = +22.2
-                new testCase().target(359).expect(-22.2f)
+                new testCase().target(359).expect(22.2f)
         };
 
         long dTMilliseconds = 10; //assume constant delta T of 10 ms

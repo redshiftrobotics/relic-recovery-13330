@@ -8,6 +8,7 @@ import java.util.*;
 
 //TODO: Unit test! 
 public class IMUPIDController {
+    static boolean newIMU = false;
     /**
      * Instance of an IMU interface implementation which
      * will allow us to get imu data.
@@ -42,7 +43,7 @@ public class IMUPIDController {
      * Calculates the current imu
      */
     public void calculateP() {
-        float angle = imu.getAngularRotationX();
+        float angle = newIMU ? imu.getAngularRotationX() + 180: imu.getAngularRotationX();
         lastError = P;
 
         System.out.println("Angle is " + angle);
