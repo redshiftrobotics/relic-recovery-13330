@@ -17,6 +17,8 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 /**
  * Created by adam on 9/12/17.
  */
+
+/*
 public class VuforiaMain {
     private final String VUFORIA_KEY = "AZSn6x3/////AAAAGQUiAVV7BUM5p1/oUpgt2zd2gpH6mH3RDbbzWwc6oPE80fZ61JSft68k7bnar35QeFYAffqqC4lASNO+ufDo3YkAAmrqm7xttuFSQCwStUUwxj6smqRehkzjIG9Ud/qMUKwtZ477dal9IayK0S/meM6t8xQpLOfGpFesBjXBxqaO092Uz3ab+O+Y3px+tSwo+w7NTqDKy6QhJnju6vyqLN10tXhzAYCdsl0tPmNoYfieelsQNAfQrTO0onkzGrvJXsSF+J+eVbwVUtdn1+SK2MWyVQHks/aXvin929RYaMTgxiAz6GwmKOHR5/S4XarDBz48mKGSnxB00OOg8QxFSWkKPsHen5b9ZQpVFwcqdzz0";
 
@@ -109,4 +111,4 @@ public class VuforiaMain {
         return matrix.formatAsTransform();
     }
 }
-
+*/
