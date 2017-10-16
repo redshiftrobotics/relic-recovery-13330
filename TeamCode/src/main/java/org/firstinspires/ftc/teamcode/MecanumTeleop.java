@@ -44,14 +44,16 @@ public class MecanumTeleop extends OpMode{
     }
 
     private void drive() {
-        frontLeftPower = gamepad1.right_stick_y - gamepad1.right_stick_x + gamepad1.left_stick_x;
-        frontRightPower = gamepad1.right_stick_y -gamepad1.right_stick_x - gamepad1.left_stick_x;
-        backLeftPower = gamepad1.right_stick_y + gamepad1.right_stick_x + gamepad1.left_stick_x;
-        backRightPower = gamepad1.right_stick_y + gamepad1.right_stick_x - gamepad1.left_stick_x;
+        frontLeftPower = (gamepad1.right_stick_y /*FORWARD POWER*/) + (gamepad1.right_stick_x /*SIDE POWER*/) + (gamepad1.left_stick_x /*TURN POWER*/);
+        frontRightPower = (gamepad1.right_stick_y /*FORWARD POWER*/) - (gamepad1.right_stick_x /*SIDE POWER*/) - (gamepad1.left_stick_x /*TURN POWER*/);
+        backRightPower = (gamepad1.right_stick_y /*FORWARD POWER*/) + (gamepad1.right_stick_x /*SIDE POWER*/) - (gamepad1.left_stick_x /*TURN POWER*/);
+        backLeftPower = (gamepad1.right_stick_y /*FORWARD POWER*/) - (gamepad1.right_stick_x /*SIDE POWER*/) + (gamepad1.left_stick_x /*TURN POWER*/);
+
+
 
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
-        backLeft.setPower(backLeftPower);
         backRight.setPower(backRightPower);
+        backLeft.setPower(backLeftPower);
     }
 }
