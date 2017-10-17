@@ -7,8 +7,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.vuforia.CameraCalibration;
 import com.vuforia.Image;
 import com.vuforia.Matrix34F;
+import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Tool;
 import com.vuforia.Vec3F;
+import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -39,10 +41,10 @@ public class JewelDetection extends LinearOpMode{
     public final static Scalar blueHigh = new Scalar(178,255,255);
 
     public int JEWEL_NOT_VISABLE = 0;
-    public int JEWEL_RED_BLUE = 0;
-    public int JEWEL_BLUE_RED = 0;
-    public int JEWEL_ALL_BLUE = 0;
-    public int JEWEL_NO_BLUE = 0;
+    public int JEWEL_RED_BLUE = 1;
+    public int JEWEL_BLUE_RED = 2;
+    public int JEWEL_ALL_BLUE = 3;
+    public int JEWEL_NO_BLUE = 4;
 
     private int jewelConfig;
 
@@ -68,16 +70,48 @@ public class JewelDetection extends LinearOpMode{
         VuforiaTrackable relicTemplate = relicTrackables.get(0);
         relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
 
+        relicTrackables.activate();
+
         telemetry.addData(">", "Initialized and Ready to GO");
         telemetry.update();
         waitForStart();
-        
-        jewelConfig = getJewelConfig(...); //CONTINUE AT 28:40
+        telemetry.addData(">", vuforia.getFrameQueue());
+        telemetry.update();
+        telemetry.addData(">", "Running");
+        telemetry.update();
+        jewelConfig = getJewelConfig(getImageFromFrame(vuforia.getFrameQueue().take(), PIXEL_FORMAT.RGB565), (VuforiaTrackableDefaultListener) relicTrackables, vuforia.getCameraCalibration());
+        telemetry.addData("Jewel", jewelConfig);
+        telemetry.update();
+        while(opModeIsActive()){
+            telemetry.addData("Jewel", jewelConfig);
+            telemetry.update();
+        }
+
+    }
+
+    public Image getImageFromFrame(VuforiaLocalizer.CloseableFrame frame, int pixelFormat){
+        telemetry.addData("> Getting image from frame","");
+        telemetry.update();
+        long numImgs = frame.getNumImages();
+
+        for(int i = 0; i < numImgs; i++){
+            if(frame.getImage(i).getFormat() == pixelFormat){
+                return frame.getImage(i);
+            }
+        }
+
+        return null;
     }
 
     public int getJewelConfig(Image img, VuforiaTrackableDefaultListener jewel, CameraCalibration camCal){
 
+        telemetry.addData(">", "0");
+        telemetry.update();
+
         OpenGLMatrix pose = jewel.getRawPose();
+
+        telemetry.addData(">", "1");
+        telemetry.update();
 
         if (pose != null && img != null && img.getPixels() != null){
             Matrix34F rawPose = new Matrix34F();
@@ -85,6 +119,9 @@ public class JewelDetection extends LinearOpMode{
             rawPose.setData(poseData);
 
             float[][] corners = new float[4][2];
+
+            telemetry.addData(">", "2");
+            telemetry.update();
 
             corners[0] = Tool.projectPoint(camCal, rawPose, new Vec3F(-127, -92, 0)).getData();
             corners[1] = Tool.projectPoint(camCal, rawPose, new Vec3F(127, 92, 0)).getData();
@@ -102,6 +139,9 @@ public class JewelDetection extends LinearOpMode{
             float width = Math.min(Math.abs(corners[1][0] - corners[2][0]), Math.abs(corners[1][0] - corners[3][0]));
             float height = Math.min(Math.abs(corners[1][1] - corners[2][1]), Math.abs(corners[1][1] - corners[3][1]));
 
+            telemetry.addData(">", "3");
+            telemetry.update();
+
             x = Math.max(x, 0);
             y = Math.max(y, 0);
             width = (x + width > crop.cols())? crop.cols() - x : width;
@@ -115,11 +155,17 @@ public class JewelDetection extends LinearOpMode{
             Core.inRange(cropped, blueLow, blueHigh, mask);
             Moments mmnts = Imgproc.moments(mask, true);
 
+            telemetry.addData(">", "4");
+            telemetry.update();
+
             if (mmnts.get_m00() > mask.total() * 0.8){
                 return JEWEL_ALL_BLUE;
             }else if (mmnts.get_m00() < mask.total() * 0.1){
                 return JEWEL_NO_BLUE;
             }
+
+            telemetry.addData(">", "5");
+            telemetry.update();
 
             if ((mmnts.get_m01() / mmnts.get_m00()) < cropped.rows() / 2){
                 return JEWEL_RED_BLUE;
