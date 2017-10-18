@@ -20,6 +20,10 @@ public class PIDTuner extends LinearOpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight;
     MecanumRobot robot;
 
+    boolean lastPressedB = false, lastPressedX = false, lastPressedY = false;
+
+    static double INCREMENT = 0.5;
+    static long STRAIGHT_SECONDS = 5000;
 
     @Override
     public void runOpMode() {
@@ -42,22 +46,55 @@ public class PIDTuner extends LinearOpMode {
 
         waitForStart();
 
+        telemetry.addLine("PID tuning opmode.\n Press B to increment P, X " +
+                "to increment I, and Y to increment D. Use the up DPAD Arrow + bound button decreases P, I, or D ");
+        telemetry.update();
+
         while (opModeIsActive()) {
-            telemetry.addData("P: " + robot.imupidController.pConst + " I: " + robot.imupidController.iConst + " D: " + robot.imupidController.dConst, "");
+            telemetry.addData("P: " + robot.imupidController.pConst +
+                    " I: " + robot.imupidController.iConst +
+                    " D: " + robot.imupidController.dConst,
+                    ""
+            );
+
             telemetry.update();
-            robot.imupidController.pConst += gamepad1.left_stick_y * 0.0001; //(System.currentTimeMillis() - lastTime);
-            robot.imupidController.iConst += gamepad1.right_stick_y * 0.0001; //(System.currentTimeMillis() - lastTime);
-            if(gamepad1.dpad_down) {
-                robot.imupidController.dConst += 0.0001;//(System.currentTimeMillis() - lastTime);
-            }else if(gamepad1.dpad_up) {
-                robot.imupidController.dConst -= 0.0001;//(System.currentTimeMillis() - lastTime);
+            if (gamepad1.b && !lastPressedB) {
+                if (gamepad1.dpad_up) {
+                    robot.imupidController.pConst -= INCREMENT;
+                } else {
+                    robot.imupidController.pConst += INCREMENT;
+                }
+                lastPressedB = true;
+            } else if (!gamepad1.a) {
+                lastPressedB = false;
             }
+
+            if (gamepad1.x && !lastPressedX) {
+                if (gamepad1.dpad_up) {
+                    robot.imupidController.iConst -= INCREMENT;
+                } else {
+                    robot.imupidController.iConst += INCREMENT;
+                }
+                lastPressedX = true;
+            } else if (!gamepad1.b) {
+                lastPressedX = false;
+            }
+
+           if (gamepad1.y && !lastPressedY) {
+               if (gamepad1.dpad_up) {
+                   robot.imupidController.dConst -= INCREMENT;
+               } else {
+                   robot.imupidController.dConst += INCREMENT;
+               }
+               lastPressedY = true;
+           } else if (!gamepad1.b) {
+               lastPressedY = false;
+           }
+
             if(gamepad1.a){
-                robot.MoveStraight(0.5f, Math.PI/2, 8000);
+                robot.MoveStraight(0.5f, Math.PI/2, STRAIGHT_SECONDS);
                 robot.STOP();
             }
-            lastTime = System.currentTimeMillis();
-
         }
     }
 }
