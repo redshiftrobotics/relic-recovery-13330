@@ -91,7 +91,7 @@ public class PIDTuner extends LinearOpMode {
                lastPressedY = false;
            }
 
-            if(gamepad1.a){
+            if (gamepad1.a) {
                 robot.MoveStraight(0.5f, Math.PI/2, STRAIGHT_SECONDS);
                 robot.STOP();
             }
