@@ -2,47 +2,62 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * Created by Duncan on 10/14/2017.
  */
 @TeleOp(name="PID Tuner")
-public class PIDTuner extends OpMode {
+public class PIDTuner extends LinearOpMode {
 
     BNO055IMU imu;
-    IMUPIDController pid;
 
     long lastTime;
 
-    @Override
-    public void init() {
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+    DcMotor frontLeft, frontRight, backLeft, backRight;
+    MecanumRobot robot;
 
+
+    @Override
+    public void runOpMode() {
+        frontLeft = hardwareMap.dcMotor.get("fl");
+        frontRight = hardwareMap.dcMotor.get("fr");
+
+        backLeft = hardwareMap.dcMotor.get("bl");
+        backRight = hardwareMap.dcMotor.get("br");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
 
-        pid.setTuning(1, 1, 1);
-    }
 
-    @Override
-    public void loop() {
-        pid.pConst += gamepad1.left_stick_y * (System.currentTimeMillis() - lastTime);
-        pid.iConst += gamepad1.right_stick_y * (System.currentTimeMillis() - lastTime);
-        if(gamepad1.dpad_down){
-            pid.dConst += (System.currentTimeMillis() - lastTime);
-        }else if(gamepad1.dpad_up){
-            pid.dConst -= (System.currentTimeMillis() - lastTime);
-        }
-        if(gamepad1.a){
-            //Drive Forward
+        robot = new MecanumRobot(frontLeft,
+                frontRight,
+                backLeft,
+                backRight,
+                imu, null, this, telemetry);
+        robot.imupidController.setTuning(0, 0, 0);
+
+
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            telemetry.addData("P: " + robot.imupidController.pConst + " I: " + robot.imupidController.iConst + " D: " + robot.imupidController.dConst, "");
+            telemetry.update();
+            robot.imupidController.pConst += gamepad1.left_stick_y * 0.0001; //(System.currentTimeMillis() - lastTime);
+            robot.imupidController.iConst += gamepad1.right_stick_y * 0.0001; //(System.currentTimeMillis() - lastTime);
+            if(gamepad1.dpad_down) {
+                robot.imupidController.dConst += 0.0001;//(System.currentTimeMillis() - lastTime);
+            }else if(gamepad1.dpad_up) {
+                robot.imupidController.dConst -= 0.0001;//(System.currentTimeMillis() - lastTime);
+            }
+            if(gamepad1.a){
+                robot.MoveStraight(0.5f, Math.PI/2, 8000);
+                robot.STOP();
+            }
+            lastTime = System.currentTimeMillis();
+
         }
     }
 }

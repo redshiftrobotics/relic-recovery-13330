@@ -11,16 +11,16 @@ public class IMUImpl implements IMU {
     BNO055IMU imu;
     BNO055IMU.Parameters imuParameters;
 
-    public IMUImpl(I2cDeviceSynch imuDevice) {
-        imuInit(imuDevice);
+    public IMUImpl(BNO055IMU imu) {
+        imuInit(imu);
     }
 
-    private void imuInit(I2cDeviceSynch device) {
+    private void imuInit(BNO055IMU imu) {
         imuParameters = new BNO055IMU.Parameters();
         imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
 
-        BNO055IMU  imu = new AdafruitBNO055IMU(device);
+      //  BNO055IMU  imu = new AdafruitBNO055IMU(device);
         imu.initialize(imuParameters);
         this.imu = imu;
     }

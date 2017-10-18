@@ -2,9 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import android.provider.Settings;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.sun.tools.javac.util.Position;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.redshiftrobotics.lib.*;
 
 /**
@@ -16,8 +21,10 @@ public class MecanumRobot {
     CoordinatePIDController xyController;
     IMUPIDController imupidController;
     IMUImpl imuImpl;
+    LinearOpMode context;
+    Telemetry tm;
 
-    public MecanumRobot(DcMotor fl, DcMotor fr, DcMotor bl, DcMotor br, I2cDeviceSynch imu, DistanceDetector detector) {
+    public MecanumRobot(DcMotor fl, DcMotor fr, DcMotor bl, DcMotor br, BNO055IMU imu, DistanceDetector detector, LinearOpMode context, Telemetry tm) {
         this.frontLeft = fl;
         this.frontRight = fr;
         this.backLeft = bl;
@@ -26,6 +33,8 @@ public class MecanumRobot {
         imuImpl = new IMUImpl(imu);
         xyController = new CoordinatePIDController(detector);
         imupidController = new IMUPIDController(imuImpl);
+        this.context = context;
+        this.tm = tm;
     }
 
     public void MoveTo(float x, float y, float targetAngle, float speed, float xTolerance, float yTolerance, float timeout) {
@@ -65,6 +74,37 @@ public class MecanumRobot {
         }
     }
 
+    public void MoveStraight(float speed, double angle, long timeout) {
+
+        // Check for speed overflow.
+        if (speed > 1) speed = 1;
+        if (speed < -1) speed = -1;
+
+
+
+        Vector2D velocity = new Vector2D(0, 0);
+        velocity.SetPolar(speed, angle);
+
+        double velocityXComponent = velocity.GetXComponent();
+        double velocityYComponent = velocity.GetYComponent();
+
+        long elapsedTime = 0;
+        long startTime = System.currentTimeMillis();
+        long loopTime = System.currentTimeMillis();
+
+
+
+        while (elapsedTime <= timeout && context.opModeIsActive()) {
+            double correctionAngular = imupidController.calculatePID(loopTime/1000);
+            tm.addData("Correction: ", correctionAngular);
+            tm.update();
+            applyMotorPower(velocityXComponent, velocityYComponent, 0f, 0f, correctionAngular);
+            long currSysTime = System.currentTimeMillis();
+            elapsedTime = currSysTime - startTime;
+            loopTime = currSysTime - loopTime;
+        }
+    }
+
 
         void applyMotorPower(double velocityX, double velocityY, double correctionX, double correctionY, double correctionAngular) {
 
@@ -79,6 +119,13 @@ public class MecanumRobot {
             frontRight.setPower(frontRightPower);
             backLeft.setPower(backLeftPower);
             backRight.setPower(backRightPower);
+        }
+
+        void STOP() {
+            frontLeft.setPower(0);
+            frontRight.setPower(0);
+            backLeft.setPower(0);
+            backRight.setPower(0);
         }
 }
 

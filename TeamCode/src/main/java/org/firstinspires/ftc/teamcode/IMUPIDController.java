@@ -20,7 +20,7 @@ public class IMUPIDController {
     float P = 0f, I = 0f, D = 0f;
 
     // Proportional, Integral, and Derivative Constants for Tuning
-    float pConst, iConst, dConst;
+    float pConst = 1f, iConst = 1f, dConst = 1f;
 
     float lastError;
 
@@ -88,6 +88,10 @@ public class IMUPIDController {
 
     public void setTarget(float targetAngle) {
         this.target = targetAngle;
+    }
+
+    public void updateCurrentTarget() {
+        this.target = this.imu.getAngularRotationX();
     }
 
     public void clearData() {
