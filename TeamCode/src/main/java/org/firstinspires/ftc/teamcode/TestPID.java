@@ -32,12 +32,17 @@ public class TestPID extends LinearOpMode {
                 backLeft,
                 backRight,
                 imu, null, this, telemetry);
-        robot.imupidController.setTuning(0, 0, 0);
+      //  robot.imupidController.setTuning(0, 0, 0);
+        robot.imupidController.setTuning(1, 1, 1);
 
         waitForStart();
 
         robot.MoveStraight(1, Math.PI/2, 2000);
         robot.STOP();
 
+        telemetry.addData("Turning... ", "");
+        telemetry.update();
+        Thread.sleep(5000);
+        robot.Turn(45, 5000);
     }
 }

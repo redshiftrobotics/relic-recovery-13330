@@ -59,16 +59,16 @@ public class IMUPIDController {
         } else if (angle -  target <= 180) {
             P = (angle -  target);
         }
-        System.out.println("P is" + P);
+        //System.out.println("P is" + P);
     }
 
     public void calculateI() {
-        I += P * dT;
+        I += P * dT / 1000;
     }
 
     // d e(t) / dt
     public void calculateD() {
-        D = (P - lastError) / dT;
+        D = (P - lastError) / (dT/1000);
     }
 
     public double calculatePID(long deltaTime) {
@@ -77,7 +77,7 @@ public class IMUPIDController {
         calculateI();
         calculateD();
 
-        return pConst * P + iConst * I + dConst * D;
+        return pConst * P + iConst * I / 2000 + dConst * D / 2000;
     }
 
     public void setTuning(float pTuning, float iTuning, float dTuning) {
@@ -90,7 +90,10 @@ public class IMUPIDController {
         this.target = targetAngle;
     }
 
-    public void updateCurrentTarget() {
+    public void addTarget(float angleDelta) {
+        this.target += angleDelta;
+    }
+    public void resetTarget() {
         this.target = this.imu.getAngularRotationX();
     }
 
@@ -100,7 +103,7 @@ public class IMUPIDController {
         this.D = 0;
         this.lastError = 0;
         this.dT = 0;
-        this.target = 0;
+        //this.target = 0;
     }
 }
 

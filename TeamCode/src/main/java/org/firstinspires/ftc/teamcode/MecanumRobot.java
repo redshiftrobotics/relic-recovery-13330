@@ -24,6 +24,11 @@ public class MecanumRobot {
     LinearOpMode context;
     Telemetry tm;
 
+    static float ANGLE_THRESHOLD = 0.1f;
+
+    static float P_TUNING = 150f, I_TUNING = 2.0e-4f, D_TUNING = 0f;
+    static boolean DEBUG = true;
+
     public MecanumRobot(DcMotor fl, DcMotor fr, DcMotor bl, DcMotor br, BNO055IMU imu, DistanceDetector detector, LinearOpMode context, Telemetry tm) {
         this.frontLeft = fl;
         this.frontRight = fr;
@@ -37,6 +42,8 @@ public class MecanumRobot {
         this.tm = tm;
     }
 
+    // THIS WILL PROBABLY NOT BE USED THIS SEASON. We don't really need coordinate PID, since
+    // the encoder idea is scrapped.
     public void MoveTo(float x, float y, float targetAngle, float speed, float xTolerance, float yTolerance, float timeout) {
 
         // Check for speed overflow. 
@@ -75,11 +82,16 @@ public class MecanumRobot {
     }
 
     public void MoveStraight(float speed, double angle, long timeout) {
+        imupidController.clearData();
+        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+        if (DEBUG) {
+            tm.addData("P: " + imupidController.P + " I: " + imupidController.I + " D: " + imupidController.D, "");
+            tm.update();
+        }
 
         // Check for speed overflow.
         if (speed > 1) speed = 1;
         if (speed < -1) speed = -1;
-
 
 
         Vector2D velocity = new Vector2D(0, 0);
@@ -96,12 +108,66 @@ public class MecanumRobot {
 
         while (elapsedTime <= timeout && context.opModeIsActive()) {
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
-            tm.addData("Correction: ", correctionAngular);
-            tm.update();
+
+            if (DEBUG) {
+                tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
+                tm.update();
+            }
             applyMotorPower(velocityXComponent, velocityYComponent, 0f, 0f, correctionAngular);
             long currSysTime = System.currentTimeMillis();
             elapsedTime = currSysTime - startTime;
             loopTime = currSysTime - loopTime;
+        }
+    }
+
+    public void Turn(float robotAngle, long timeout) {
+        // Set tuning for turning
+        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+
+        // Clear out past data.
+        imupidController.clearData();
+
+
+
+        if (DEBUG) {
+            tm.addData("Target: ", imupidController.target);
+            tm.update();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                tm.addData("Error!", "");
+                tm.update();
+            }
+            imupidController.addTarget(robotAngle);
+            tm.addData("New Target: ", imupidController.target);
+            tm.update();
+        }
+
+
+        long elapsedTime = 0;
+        long startTime = System.currentTimeMillis();
+        long loopTime = System.currentTimeMillis();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        while (elapsedTime <= timeout && context.opModeIsActive()) {
+            double correctionAngular = imupidController.calculatePID(loopTime/1000);
+            tm.addData("P: ", imupidController.P);
+            tm.update();
+            // Apply motor
+            applyMotorPower(0, 0, 0, 0,  0.5+correctionAngular);
+            long currSysTime = System.currentTimeMillis();
+            elapsedTime = currSysTime - startTime;
+            loopTime = currSysTime - loopTime;
+
+            // Our tolerance condition.
+            if (withinThreshold(imupidController.P, ANGLE_THRESHOLD) && withinThreshold(imupidController.lastError, ANGLE_THRESHOLD)) {
+                break;
+            }
         }
     }
 
@@ -110,10 +176,10 @@ public class MecanumRobot {
 
             // Divide all corrections by 2000 to make sure we don't overflow. Not a good solution!!!
 
-            double frontLeftPower = (velocityY + correctionY/2000)  - (velocityX + correctionX/2000) + correctionAngular/2000;
-            double frontRightPower = (velocityY + correctionY/2000) - (velocityX + correctionX/2000) - correctionAngular/2000;
-            double backLeftPower = (velocityY + correctionY/2000) + (velocityX + correctionX/2000) + correctionAngular/2000;
-            double backRightPower = (velocityY + correctionY/2000) + (velocityX + correctionX/2000) - correctionAngular/2000;
+            double frontLeftPower = velocityY  - velocityX  - correctionAngular/2000;
+            double frontRightPower = velocityY + velocityX  + correctionAngular/2000;
+            double backRightPower = velocityY - velocityX + correctionAngular/2000;
+            double backLeftPower = velocityY + velocityX - correctionAngular/2000;
 
             frontLeft.setPower(frontLeftPower);
             frontRight.setPower(frontRightPower);
@@ -121,7 +187,11 @@ public class MecanumRobot {
             backRight.setPower(backRightPower);
         }
 
-        void STOP() {
+        public boolean withinThreshold(float value, float tolerance) {
+            return Math.abs(value) <= tolerance;
+        }
+
+        public void STOP() {
             frontLeft.setPower(0);
             frontRight.setPower(0);
             backLeft.setPower(0);

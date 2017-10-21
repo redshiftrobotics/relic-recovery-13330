@@ -24,7 +24,7 @@ public class PIDTuner extends LinearOpMode {
 
     static double INCREMENT = 0.5;
     static long STRAIGHT_SECONDS = 5000;
-
+    static boolean TUNING_TURNING = true;
     @Override
     public void runOpMode() {
         frontLeft = hardwareMap.dcMotor.get("fl");
@@ -40,15 +40,25 @@ public class PIDTuner extends LinearOpMode {
                 backLeft,
                 backRight,
                 imu, null, this, telemetry);
-        robot.imupidController.setTuning(0, 0, 0);
+
+        // Working constants:
+
+        /*
+        P: 150.0
+        I: -
+        D: -
+         */
 
 
+        robot.imupidController.setTuning(150f, 2.0e-4f, 0);
 
         waitForStart();
 
         telemetry.addLine("PID tuning opmode.\n Press B to increment P, X " +
                 "to increment I, and Y to increment D. Use the up DPAD Arrow + bound button decreases P, I, or D ");
         telemetry.update();
+
+        int times = 0;
 
         while (opModeIsActive()) {
             telemetry.addData("P: " + robot.imupidController.pConst +
@@ -65,18 +75,20 @@ public class PIDTuner extends LinearOpMode {
                     robot.imupidController.pConst += INCREMENT;
                 }
                 lastPressedB = true;
-            } else if (!gamepad1.a) {
+                times++;
+                telemetry.addData("Times: ", times);
+            } else if (!gamepad1.b) {
                 lastPressedB = false;
             }
 
             if (gamepad1.x && !lastPressedX) {
                 if (gamepad1.dpad_up) {
-                    robot.imupidController.iConst -= INCREMENT;
+                    robot.imupidController.iConst -= INCREMENT/10000;
                 } else {
-                    robot.imupidController.iConst += INCREMENT;
+                    robot.imupidController.iConst += INCREMENT/10000;
                 }
                 lastPressedX = true;
-            } else if (!gamepad1.b) {
+            } else if (!gamepad1.x) {
                 lastPressedX = false;
             }
 
@@ -87,13 +99,18 @@ public class PIDTuner extends LinearOpMode {
                    robot.imupidController.dConst += INCREMENT;
                }
                lastPressedY = true;
-           } else if (!gamepad1.b) {
+           } else if (!gamepad1.y) {
                lastPressedY = false;
            }
 
             if (gamepad1.a) {
-                robot.MoveStraight(0.5f, Math.PI/2, STRAIGHT_SECONDS);
+                if (gamepad1.dpad_up) {
+                    robot.Turn(90, 5000);
+                } else {
+                    robot.MoveStraight(0.5f, Math.PI/2, STRAIGHT_SECONDS);
+                }
                 robot.STOP();
+                robot.imupidController.resetTarget();
             }
         }
     }
