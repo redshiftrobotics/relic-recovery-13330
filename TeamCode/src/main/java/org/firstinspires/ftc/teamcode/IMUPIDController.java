@@ -93,6 +93,11 @@ public class IMUPIDController {
     public void addTarget(float angleDelta) {
         this.target += angleDelta;
     }
+
+    public void subtractTarget(float angleDelta) {
+        this.target -= angleDelta;
+    }
+
     public void resetTarget() {
         this.target = this.imu.getAngularRotationX();
     }
@@ -103,7 +108,6 @@ public class IMUPIDController {
         this.D = 0;
         this.lastError = 0;
         this.dT = 0;
-        //this.target = 0;
     }
 }
 
