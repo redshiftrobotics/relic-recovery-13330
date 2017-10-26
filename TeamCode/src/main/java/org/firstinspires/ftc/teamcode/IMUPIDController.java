@@ -6,7 +6,6 @@ import java.util.*;
  * Created by adam on 9/16/17.
  */
 
-//TODO: Unit test! 
 public class IMUPIDController {
     static boolean newIMU = false;
     /**
@@ -42,16 +41,23 @@ public class IMUPIDController {
     /**
      * Calculates the current imu
      */
+
+    public static boolean DEBUG = false;
+
     public void calculateP() {
+
+        // The new IMUs return data between -180 and 180, while the old return
+        // between 0 and 360.
         float angle = newIMU ? imu.getAngularRotationX() + 180: imu.getAngularRotationX();
         lastError = P;
 
-        System.out.println("Angle is " + angle);
-        System.out.println("Target is " + target);
+        if (DEBUG) {
+            System.out.println("Angle is " + angle);
+            System.out.println("Target is " + target);
+        }
 
-        //angle = 359
-        //target = 1
-
+        // We have to determine what the most efficient way to turn is (we should never turn
+        // more than 180 degrees to hit a target).
         if (angle + 360 - target <= 180) {
             P = (angle -  target + 360);
         } else if (target + 360 - angle <= 180) {
@@ -102,6 +108,9 @@ public class IMUPIDController {
         this.target = this.imu.getAngularRotationX();
     }
 
+    /**
+     * Clears out all PID-associated data.
+     */
     public void clearData() {
         this.P = 0;
         this.I = 0;
