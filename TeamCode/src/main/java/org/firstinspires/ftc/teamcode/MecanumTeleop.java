@@ -34,6 +34,9 @@ public class MecanumTeleop extends OpMode {
     Servo leftJewel;
     Servo rightJewel;
 
+    Servo collectorLeft;
+    Servo collectorRight;
+
 
     @Override
     public void init() {
@@ -49,6 +52,10 @@ public class MecanumTeleop extends OpMode {
         rightIntake = hardwareMap.dcMotor.get("rightIntake");
         leftJewel = hardwareMap.servo.get("leftJewel");
         rightJewel = hardwareMap.servo.get("rightJewel");
+
+        collectorLeft = hardwareMap.servo.get("collectorLeft");
+        collectorLeft = hardwareMap.servo.get("collectorRight");
+        setJewelPositions();
     }
 
     /*
@@ -66,19 +73,25 @@ public class MecanumTeleop extends OpMode {
     @Override
     public void loop() {
         controlConveyor();
-        controlJewel();
         drive();
-
     }
 
-    private void controlConveyor(){
-        conveyor.setPower(gamepad1.a?1.0f:(gamepad1.b?-1.0f:0.0));
-        conveyorLift.setPosition(gamepad1.x?1.0f:(gamepad1.y?0.0f:conveyorLift.getPosition()));
-        leftIntake.setPower(gamepad1.right_bumper?-1.0f:(gamepad1.right_trigger));
-        rightIntake.setPower(gamepad1.right_bumper?-1.0f:(gamepad1.right_trigger));
+    private void controlConveyor() {
+
+    //    int gpadA = gamepad1.a ? 1 : 0;
+     //   int gpadB = gamepad1.b ? 1 : 0;
+     //   float gamepad1Power = (float) (gpadA + (gpadB & (~gpadA + 2) * -1));
+
+
+
+
+        conveyor.setPower(gamepad1.a ? 1.0f : (gamepad1.b ? -1.0f : 0.0) );
+        conveyorLift.setPosition(gamepad1.x ? 1.0f : (gamepad1.y ? 0.0f : conveyorLift.getPosition()));
+        leftIntake.setPower(gamepad1.right_bumper ? -1.0f : (gamepad1.right_trigger));
+        rightIntake.setPower(gamepad1.right_bumper ? -1.0f : (gamepad1.right_trigger));
     }
 
-    private void controlJewel(){
+    private void setJewelPositions(){
         leftJewel.setPosition(0.0);
         rightJewel.setPosition(0.0);
     }
