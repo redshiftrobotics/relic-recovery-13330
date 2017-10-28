@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -105,9 +103,9 @@ public class PIDTuner extends LinearOpMode {
 
             if (gamepad1.a) {
                 if (gamepad1.dpad_up) {
-                    robot.Turn(90, 5000);
+                    robot.turn(90, 5000);
                 } else {
-                    robot.MoveStraight(0.5f, Math.PI/2, 3000, STRAIGHT_SECONDS);
+                    robot.moveStraight(0.5f, Math.PI/2, 3000, STRAIGHT_SECONDS);
                 }
                 robot.STOP();
                 robot.imupidController.resetTarget();

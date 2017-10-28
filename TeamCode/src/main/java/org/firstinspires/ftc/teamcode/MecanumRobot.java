@@ -111,6 +111,10 @@ public class MecanumRobot {
         }
     }*/
 
+   public void moveStraight(float speed, long timeout, double cmDistance) {
+       moveStraight(speed, Math.PI / 2, timeout, cmDistance);
+   }
+
     /**
      * Moves a mecanum chassis straight at a specific angle for a specific distance in centimeters.
      * Uses PID.
@@ -121,7 +125,7 @@ public class MecanumRobot {
      * @param cmDistance the distance the chassis should move (converts to encoders based on
      *                   chassis wheel diameter)
      */
-    public void MoveStraight(float speed, double angle, long timeout, double cmDistance) {
+    public void moveStraight(float speed, double angle, long timeout, double cmDistance) {
 
         // Clear out all past PID data.
         imupidController.clearData();
@@ -195,6 +199,10 @@ public class MecanumRobot {
         }
     }
 
+    public void turn(double robotAngle, long timout) {
+        turn((float) robotAngle, timeout);
+    }
+
     /**
      * Turns the robot to a specified angle heading using PID
      * @param robotAngle the angle to which the robot should turn, with the robot's current position
@@ -205,7 +213,7 @@ public class MecanumRobot {
      *                from idling for too long if the angle tolerance is never quite reached.
      */
 
-    public void Turn(float robotAngle, long timeout) {
+    public void turn(float robotAngle, long timeout) {
         // Set tuning for turning
         imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
 

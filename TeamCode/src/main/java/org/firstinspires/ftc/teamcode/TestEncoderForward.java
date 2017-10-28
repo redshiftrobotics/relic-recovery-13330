@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
@@ -32,16 +31,16 @@ public class TestEncoderForward extends LinearOpMode {
         waitForStart();
 
         // Forward Ten CM
-        robot.MoveStraight(1, Math.PI/2, 10000, 10);
+        robot.moveStraight(1, Math.PI/2, 10000, 10);
         robot.STOP();
 
         Thread.sleep(1000);
 
-        robot.MoveStraight(1, -Math.PI/2, 10000, -10);
+        robot.moveStraight(1, -Math.PI/2, 10000, -10);
 
      /*   telemetry.addData("Turning... ", "");
         telemetry.update();
         Thread.sleep(5000);
-        robot.Turn(45, 5000);*/
+        robot.turn(45, 5000);*/
     }
 }

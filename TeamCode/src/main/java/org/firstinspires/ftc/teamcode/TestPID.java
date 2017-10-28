@@ -4,7 +4,6 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
 /**
  * Created by adam on 10/17/17.
@@ -37,12 +36,12 @@ public class TestPID extends LinearOpMode {
 
         waitForStart();
 
-        robot.MoveStraight(1, Math.PI/2, 2000, 10000);
+        robot.moveStraight(1, Math.PI/2, 2000, 10000);
         robot.STOP();
 
         telemetry.addData("Turning... ", "");
         telemetry.update();
         Thread.sleep(5000);
-        robot.Turn(45, 5000);
+        robot.turn(45, 5000);
     }
 }
