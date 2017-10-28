@@ -59,6 +59,10 @@ public class ColumnController {
      * @return An int between -1 and 1 to multiply a movement parallel to the Cryptobox.
      * @throws Exception
      */
+
+    public RelicRecoveryVuMark getColumn() {
+        return vuMark;
+    }
     public int movementMultiplier() throws Exception {
         switch (vuMark){
             case LEFT:

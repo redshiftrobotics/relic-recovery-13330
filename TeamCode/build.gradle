@@ -10,6 +10,13 @@
 // Custom definitions may go here
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+
+repositories {
+    maven { url 'http://repo1.maven.org/maven2' }
+}
+
 dependencies {
     compile project(':opencv')
+    testCompile 'junit:junit:4.12'
 }
+
