@@ -36,7 +36,7 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 0.1f;
+    static float ANGLE_THRESHOLD = 10f;
 
     /**
      * Our tuning constants for the mecanum chassis.
@@ -112,7 +112,7 @@ public class MecanumRobot {
     }*/
 
    public void moveStraight(float speed, long timeout, double cmDistance) {
-       moveStraight(speed, Math.PI / 2, timeout, cmDistance);
+       moveStraight(speed, 3f/2f * Math.PI, timeout, cmDistance);
    }
 
     /**
@@ -137,6 +137,10 @@ public class MecanumRobot {
         // Good to have a debug mode to enable/disable telemetry
         if (DEBUG) {
             tm.addData("P: " + imupidController.P + " I: " + imupidController.I + " D: " + imupidController.D, "");
+            tm.addData("speed", speed);
+            tm.addData("angle", angle);
+            tm.addData("timeout", timeout);
+            tm.addData("cmDistance", cmDistance);
             tm.update();
         }
 
@@ -184,7 +188,7 @@ public class MecanumRobot {
         while (elapsedTime <= timeout && context.opModeIsActive() && frontLeft.getCurrentPosition() < targetEncoderRotation) {
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
 
-            if (DEBUG) {
+            if (DEBUG || true) {
                // tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
                 // tm.update();
                 tm.addData(" Front Left Position: ", frontLeft.getCurrentPosition());
@@ -199,7 +203,7 @@ public class MecanumRobot {
         }
     }
 
-    public void turn(double robotAngle, long timout) {
+    public void turn(double robotAngle, long timeout) {
         turn((float) robotAngle, timeout);
     }
 
@@ -241,14 +245,6 @@ public class MecanumRobot {
         long elapsedTime = 0;
         long startTime = System.currentTimeMillis();
         long loopTime = System.currentTimeMillis();
-
-        if (DEBUG) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
 
         // Simpler while condition because there is no need for encoders...
         while (elapsedTime <= timeout && context.opModeIsActive()) {

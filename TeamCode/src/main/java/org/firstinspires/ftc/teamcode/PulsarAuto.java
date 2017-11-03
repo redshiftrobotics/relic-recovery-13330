@@ -20,21 +20,30 @@ abstract public class PulsarAuto extends LinearOpMode {
             int red = colorSensor.red();
             int blue = colorSensor.blue();
 
-            Alliance backJewel;
+            Alliance frontJewel;
 
-            if (red > 3 && red > blue) backJewel = RED;
-            else if (blue > 3 && blue > red) backJewel = BLUE;
+            if (red > 3 && red > blue) frontJewel = RED;
+            else if (blue > 3 && blue > red) frontJewel = BLUE;
             else return TargetJewelPosition.NONE;
 
-            if (backJewel == this) return TargetJewelPosition.FRONT;
-            else return TargetJewelPosition.BACK;
+            if (frontJewel == this) return TargetJewelPosition.BACK;
+            else return TargetJewelPosition.FRONT;
         }
 
-        public double getJewelUpPosition(StartPosition pos) { return this == BLUE ? 0 : 0; }
-        public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0 : 0; }
-        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? -30 : 30; }
-        public double getDistanceToClearStone(StartPosition pos) { return pos == StartPosition.FRONT ? 80 : 60; }
-        public double getAngleToAlignWithCryptobox(StartPosition pos) { return pos == StartPosition.FRONT ? 90 : 0; }
+        public double getJewelUpPosition(StartPosition pos) { return this == BLUE ? 0.2 : 0.55; }
+        public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0.785 : 0.235; }
+        public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.75 : 0.25; }
+        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 5 : -5; }
+        public double getDistanceToClearStone(StartPosition pos) { return 26.5; }
+        public double getAngleToAlignWithCryptobox(StartPosition pos) {
+            if (pos == StartPosition.FRONT) {
+                if (this == BLUE) return -90;
+                return 90;
+            } else {
+                return 0;
+            }
+        }
+
         public double getDistanceToAlignWithColumn(StartPosition pos, RelicRecoveryVuMark column) {
             if (this == BLUE) {
                 if (pos == StartPosition.FRONT) {
@@ -65,36 +74,43 @@ abstract public class PulsarAuto extends LinearOpMode {
                     }
                 }
             }
+            return 0;
         }
         public double getAngleToFaceCryptobox(StartPosition pos) { return this == BLUE ? -90 : 90; }
     }
     protected enum StartPosition { BACK, FRONT }
 
-    private enum TargetJewelPosition { FRONT, BACK, NONE }
+    protected enum TargetJewelPosition { FRONT, BACK, NONE }
 
-    private DcMotor frontLeft;
-    private DcMotor frontRight;
-    private DcMotor backLeft;
-    private DcMotor backRight;
+    protected DcMotor frontLeft;
+    protected DcMotor frontRight;
+    protected DcMotor backLeft;
+    protected DcMotor backRight;
 
-    private Servo jewel;
-    private Servo leftJewel;
-    private Servo rightJewel;
+    protected Servo jewel;
+    protected Servo leftJewel;
+    protected Servo rightJewel;
 
-    private ColorSensor jewelDetector;
-    private ColorSensor leftJewelDetector;
-    private ColorSensor rightJewelDetector;
+    protected ColorSensor jewelDetector;
+    protected ColorSensor leftJewelDetector;
+    protected ColorSensor rightJewelDetector;
 
-    private DcMotor conveyor;
+    protected DcMotor conveyor;
 
-    private StartPosition startPosition = getStartPosition();
-    private Alliance alliance = getAlliance();
+    protected StartPosition startPosition = getStartPosition();
+    protected Alliance alliance = getAlliance();
 
-    private MecanumRobot robot;
+    protected boolean PULSAR_SIMPLE_AUTO = false;
 
-    private ColumnController columnController;
+     MecanumRobot robot;
 
-    private BNO055IMU imu;
+     ColumnController columnController;
+
+     BNO055IMU imu;
+
+     void moveStraight(float speed, long timeout, double cmDistance) {
+        robot.moveStraight(speed, timeout, cmDistance);
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -125,33 +141,76 @@ abstract public class PulsarAuto extends LinearOpMode {
                 this,
                 telemetry
         );
+        telemetry.addLine("Ready");
+        telemetry.update();
+
         waitForStart();
+
 
         jewel.setPosition(alliance.getJewelDownPosition(startPosition));
 
+        telemetry.addLine("Jewel Lowered");
+        telemetry.update();
+
+        Thread.sleep(1000);
+
         TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+
+        telemetry.addData("saw jewel", targetJewelPosition.toString());
+        if (targetJewelPosition == TargetJewelPosition.NONE) {
+            telemetry.update();
+            telemetry.addLine("Got None, moving");
+            jewel.setPosition(alliance.getJewelDownAltPosition(startPosition));
+
+            telemetry.addLine("Jewel Lowered");
+            telemetry.update();
+
+            Thread.sleep(1000);
+
+            targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+        }
+        telemetry.update();
+
+        Thread.sleep(1000);
 
         switch (targetJewelPosition) {
             case FRONT: break; // We do this later
             case BACK:
                 robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                jewel.setPosition(alliance.getJewelUpPosition(startPosition));
                 robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
-                // fallthrough
+                break;
             case NONE:
                 jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+                Thread.sleep(1000);
                 break;
         }
 
-        robot.moveStraight(1, 5000, alliance.getDistanceToClearStone(startPosition));
+        moveStraight(1, 5000, alliance.getDistanceToClearStone(startPosition));
+        Thread.sleep(1000);
 
         jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+        Thread.sleep(1000);
+
+        if (PULSAR_SIMPLE_AUTO) {
+            telemetry.addLine("Simple auto only, exiting.");
+            telemetry.update();
+            return;
+        }
+
+        telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
+        telemetry.update();
 
         robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
+        Thread.sleep(10000);
 
-        robot.moveStraight(1, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
+        moveStraight(1, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
+        Thread.sleep(1000);
 
         robot.turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
+        Thread.sleep(1000);
 
         conveyor.setPower(1.0);
+        Thread.sleep(1000);
     }
 }

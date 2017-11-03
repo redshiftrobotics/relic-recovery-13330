@@ -35,13 +35,20 @@ public class TestPID extends LinearOpMode {
         robot.imupidController.setTuning(1, 1, 1);
 
         waitForStart();
-
+/*
         robot.moveStraight(1, Math.PI/2, 2000, 10000);
-        robot.STOP();
+        robot.STOP();*/
 
         telemetry.addData("Turning... ", "");
         telemetry.update();
         Thread.sleep(5000);
         robot.turn(45, 5000);
+        robot.STOP();
+        Thread.sleep(5000);
+        robot.turn(90, 5000);
+        robot.STOP();
+        Thread.sleep(5000);
+        robot.turn(-90, 5000);
+        robot.STOP();
     }
 }
