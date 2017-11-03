@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.redshiftrobotics.lib.*;
 
@@ -36,12 +38,12 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 10f;
+    static float ANGLE_THRESHOLD = 0.2f;
 
     /**
      * Our tuning constants for the mecanum chassis.
      */
-    static float P_TUNING = 150f, I_TUNING = 2.0e-4f, D_TUNING = 0f;
+    static float P_TUNING = 150f, I_TUNING = /*2.0e-4f*/ 2.0e-1f, D_TUNING = 0f;
 
     // Simple debug enable/disable
     static boolean DEBUG = true;
@@ -118,15 +120,17 @@ public class MecanumRobot {
     /**
      * Moves a mecanum chassis straight at a specific angle for a specific distance in centimeters.
      * Uses PID.
-     * @param speed the speed (as a fraction out of 1) component of the velocity vector.
-     * @param angle the direction of the velocity vector
+     * @param speed the speed (as a fraction out of 1) component of the velocity vector. Cannot be negative, is absolute valued.
+     * @param angle the direction of the velocity vector in radians. Affects WHICH WAY THE ROBOT moves. To move forward for instance,
+     *              one would use an angle of pi/2, to move backward, 3pi/2.
      * @param timeout the timeout, when the function should stop.
      *                (used as a safeguard to prevent a rogue robot).
-     * @param cmDistance the distance the chassis should move (converts to encoders based on
-     *                   chassis wheel diameter)
+     * @param cmDistance the magnitude of the distance the chassis should move (converts to encoders based on
+     *                   chassis wheel diameter).
      */
-    public void moveStraight(float speed, double angle, long timeout, double cmDistance) {
 
+    // 1.0, 3pi/2, 2000, 10
+    public void moveStraight(float speed, double angle, long timeout, double cmDistance) {
         // Clear out all past PID data.
         imupidController.clearData();
 
@@ -142,12 +146,17 @@ public class MecanumRobot {
             tm.addData("timeout", timeout);
             tm.addData("cmDistance", cmDistance);
             tm.update();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         // Check for speed overflow (motors can only be set between 1 and -1)
-        if (speed > 1) speed = 1;
-        if (speed < -1) speed = -1;
+        speed = Range.clip(Math.abs(speed), 0, 1);
 
+        cmDistance = Math.abs(cmDistance);
 
         // We will represent velocity as a vector.
         Vector2D velocity = new Vector2D(0, 0);
@@ -160,38 +169,70 @@ public class MecanumRobot {
         double velocityXComponent = velocity.GetXComponent();
         double velocityYComponent = velocity.GetYComponent();
 
-        // Timekeeping variables...
+        if (DEBUG) {
+            tm.addData("Velocity Y Component: ", velocityYComponent);
+            tm.update();
+        }
 
 
-        long elapsedTime = 0;
-        long startTime = System.currentTimeMillis();
 
-        // loopTime = time between each loop iteration
-        long loopTime = System.currentTimeMillis();
 
         // This Conversion class contains all the conversion factors we need to switch between
         // encoders and cm.
 
         int encoderDistance = Conversion.cmToEncoder(cmDistance);
 
+        // figure out whether to add or subtract encoder rotations based on the direction we're moving
+        float encoderDirectionSign = Math.signum((float)velocityYComponent);
+
+
         // Use front motor for encoder counting (this can easily be changed). Some motors
         // may be wired such that the encoders count down. To reduce that pain in the ass, use
         // encoders on a different motor. It really doesn't matter, there are minimal differences between
         // encoders on different motors.
-        float currentEncoderRotation = frontLeft.getCurrentPosition();
+        //
+
+        //float currentEncoderRotation = frontLeft.getCurrentPosition();
+        // current: -1000 //want to move: 1000 at Math.pi/2
+        float initialEncoderRotation = frontLeft.getCurrentPosition();
 
         // We might not start at position 0...
-        float targetEncoderRotation = currentEncoderRotation + encoderDistance;
+        float targetEncoderRotation = initialEncoderRotation + encoderDirectionSign * encoderDistance;
+        //-1000 + 1000 = 0
+
+
+        if (DEBUG) {
+            tm.addData("Encoder Distance: " + Integer.toString(encoderDistance), "");
+            tm.addData("Encoder direction: ", encoderDirectionSign);
+            tm.update();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Timekeeping variables...
+        long elapsedTime = 0;
+        long startTime = System.currentTimeMillis();
+
+        // loopTime = time between each loop iteration
+        long loopTime = System.currentTimeMillis();
+
 
         // We need to account for elapsed time, potential stop conditions from the opmode container,
         // and changes in encoder position.
-        while (elapsedTime <= timeout && context.opModeIsActive() && frontLeft.getCurrentPosition() < targetEncoderRotation) {
+
+        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - frontLeft.getCurrentPosition()) <= encoderDistance) {
+         /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
 
-            if (DEBUG || true) {
+            if (DEBUG) {
                // tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
                 // tm.update();
                 tm.addData(" Front Left Position: ", frontLeft.getCurrentPosition());
+                tm.addData("Target Position: ", targetEncoderRotation);
+                tm.update();
             }
 
             applyMotorPower(velocityXComponent, velocityYComponent, correctionAngular);

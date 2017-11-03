@@ -33,7 +33,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         public double getJewelUpPosition(StartPosition pos) { return this == BLUE ? 0.2 : 0.55; }
         public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0.785 : 0.235; }
         public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.75 : 0.25; }
-        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 5 : -5; }
+        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 10 : -10; }
         public double getDistanceToClearStone(StartPosition pos) { return 26.5; }
         public double getAngleToAlignWithCryptobox(StartPosition pos) {
             if (pos == StartPosition.FRONT) {
