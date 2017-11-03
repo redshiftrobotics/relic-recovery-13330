@@ -16,8 +16,8 @@ import org.redshiftrobotics.lib.encoder.EncoderPositioner;
  * Created by Duncan on 9/19/2017.
  */
 
-@TeleOp(name = "mecanum")
-public class MecanumTeleop extends OpMode {
+@TeleOp(name = "Pulsar Teleop")
+public class MecanumTeleop extends OpMode{
     static double TICKS_PER_CM = 1/1440;
 
     DcMotor frontLeft;
@@ -71,6 +71,8 @@ public class MecanumTeleop extends OpMode {
 
     float frontLeftPower, frontRightPower, backLeftPower, backRightPower;
 
+    static float CONVEYOR_BELT_POWER_SCALAR = 0.5f;
+
     @Override
     public void loop() {
         controlConveyor();
@@ -83,21 +85,18 @@ public class MecanumTeleop extends OpMode {
      //   int gpadB = gamepad1.b ? 1 : 0;
      //   float gamepad1Power = (float) (gpadA + (gpadB & (~gpadA + 2) * -1));
 
-
-
-
-        conveyor.setPower(-gamepad1.left_stick_y);
+        conveyor.setPower(gamepad1.left_bumper ? -0.5f : (gamepad1.left_trigger * CONVEYOR_BELT_POWER_SCALAR));
         //conveyorLift.setPosition(gamepad1.x ? 1.0f : (gamepad1.y ? 0.0f : conveyorLift.getPosition()));
         leftIntake.setPower(gamepad1.right_bumper ? -0.5f : (gamepad1.right_trigger/2));
         rightIntake.setPower(gamepad1.right_bumper ? -0.5f : (gamepad1.right_trigger/2));
     }
 
-    private void setServos(){
+    private void setServos() {
         leftJewel.setPosition(0.2);
-        rightJewel.setPosition(0.8);
+        rightJewel.setPosition(0.5);
 
-        collectorLeft.setPosition(0.4);
-        collectorRight.setPosition(0.6);
+        collectorLeft.setPosition(0.38);
+        collectorRight.setPosition(0.66);
     }
 
     private void drive() {
