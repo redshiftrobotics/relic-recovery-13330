@@ -202,15 +202,19 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.update();
 
         robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
+        robot.STOP();
         Thread.sleep(10000);
 
         moveStraight(1, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
+        robot.STOP();
         Thread.sleep(1000);
 
         robot.turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
+        robot.STOP();
         Thread.sleep(1000);
 
         conveyor.setPower(1.0);
+        robot.STOP();
         Thread.sleep(1000);
     }
 }
