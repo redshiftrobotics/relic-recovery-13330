@@ -93,7 +93,7 @@ public class MecanumTeleop extends OpMode{
 
     private void setServos() {
         leftJewel.setPosition(0.2);
-        rightJewel.setPosition(0.5);
+        rightJewel.setPosition(0.55);
 
         collectorLeft.setPosition(0.38);
         collectorRight.setPosition(0.66);
