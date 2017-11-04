@@ -36,7 +36,7 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 10f;
+    static float ANGLE_THRESHOLD = .1f;
 
     /**
      * Our tuning constants for the mecanum chassis.

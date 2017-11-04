@@ -32,9 +32,9 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         public double getJewelUpPosition(StartPosition pos) { return this == BLUE ? 0.2 : 0.55; }
         public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0.785 : 0.235; }
-        public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.75 : 0.25; }
-        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 5 : -5; }
-        public double getDistanceToClearStone(StartPosition pos) { return 26.5; }
+        public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.74: 0.26; }
+        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 15 : -15; }
+        public double getDistanceToClearStone(StartPosition pos) { return 15; } //26.5; }
         public double getAngleToAlignWithCryptobox(StartPosition pos) {
             if (pos == StartPosition.FRONT) {
                 if (this == BLUE) return -90;
@@ -183,7 +183,9 @@ abstract public class PulsarAuto extends LinearOpMode {
             case FRONT: break; // We do this later
             case BACK:
                 robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                //Thread.sleep(1000);
                 jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+                //Thread.sleep(1000);
                 robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
                 break;
             case NONE:
@@ -192,17 +194,37 @@ abstract public class PulsarAuto extends LinearOpMode {
                 break;
         }
 
+
+        if (PULSAR_SIMPLE_AUTO) {
+            telemetry.addLine("Simple auto only, exiting.");
+            telemetry.update();
+
+            if ((alliance == Alliance.BLUE && startPosition == StartPosition.BACK) || (alliance == Alliance.RED && startPosition == StartPosition.FRONT)) {
+                frontLeft.setPower(-0.5);
+                backLeft.setPower(-0.5);
+                frontRight.setPower(-1);
+                backRight.setPower(-1);
+            } else {
+                frontLeft.setPower(-1);
+                backLeft.setPower(-1);
+                frontRight.setPower(-0.5);
+                backRight.setPower(-0.5);
+            }
+
+            sleep(750);
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            frontRight.setPower(0);
+            backRight.setPower(0);
+
+            return;
+        }
+
         moveStraight(1, 5000, alliance.getDistanceToClearStone(startPosition));
         Thread.sleep(1000);
 
         jewel.setPosition(alliance.getJewelUpPosition(startPosition));
         Thread.sleep(1000);
-
-        if (PULSAR_SIMPLE_AUTO) {
-            telemetry.addLine("Simple auto only, exiting.");
-            telemetry.update();
-            return;
-        }
 
         telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
         telemetry.update();

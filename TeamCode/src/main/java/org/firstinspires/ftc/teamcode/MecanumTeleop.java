@@ -16,7 +16,7 @@ import org.redshiftrobotics.lib.encoder.EncoderPositioner;
  * Created by Duncan on 9/19/2017.
  */
 
-@TeleOp(name = "Pulsar Teleop")
+@TeleOp(name = "Pulsar Teleop", group = "000 Competition")
 public class MecanumTeleop extends OpMode{
     static double TICKS_PER_CM = 1/1440;
 
@@ -59,7 +59,6 @@ public class MecanumTeleop extends OpMode{
         collectorLeft = hardwareMap.servo.get("collectorLeft");
         collectorRight = hardwareMap.servo.get("collectorRight");
 
-        setServos();
 
         telemetry.addLine("Ready for TeleOp!");
         telemetry.update();
@@ -81,6 +80,7 @@ public class MecanumTeleop extends OpMode{
 
     @Override
     public void loop() {
+        setServos();
         controlConveyor();
         drive();
     }

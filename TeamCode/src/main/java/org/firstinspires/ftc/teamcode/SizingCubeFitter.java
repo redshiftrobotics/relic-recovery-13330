@@ -26,7 +26,7 @@ public class SizingCubeFitter {
     }
 
     public void fitInSizingCube(boolean block) throws InterruptedException {
-        conveyorLift.setPosition(0.42);
+        conveyorLift.setPosition(0.43);
         leftJewel.setPosition(0.05);
         rightJewel.setPosition(0.60);
 
