@@ -88,6 +88,7 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected DcMotor backRight;
 
     protected Servo jewel;
+    protected Servo otherJewel;
     protected Servo leftJewel;
     protected Servo rightJewel;
 
@@ -96,11 +97,12 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected ColorSensor rightJewelDetector;
 
     protected DcMotor conveyor;
+    protected Servo conveyorLift;
 
     protected StartPosition startPosition = getStartPosition();
     protected Alliance alliance = getAlliance();
 
-    protected boolean PULSAR_SIMPLE_AUTO = false;
+    protected boolean PULSAR_SIMPLE_AUTO = true;
 
      MecanumRobot robot;
 
@@ -125,11 +127,10 @@ abstract public class PulsarAuto extends LinearOpMode {
         leftJewelDetector = hardwareMap.colorSensor.get("leftJewelDetector");
         rightJewelDetector = hardwareMap.colorSensor.get("rightJewelDetector");
         conveyor = hardwareMap.dcMotor.get("conveyor");
-
-        leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
-        rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
+        conveyorLift = hardwareMap.servo.get("conveyorLift");
 
         jewel = (alliance == Alliance.BLUE) ? leftJewel : rightJewel;
+        otherJewel = (alliance != Alliance.BLUE) ? leftJewel : rightJewel;
         jewelDetector = (alliance == Alliance.BLUE) ? leftJewelDetector : rightJewelDetector;
 
         robot = new MecanumRobot(
@@ -141,11 +142,16 @@ abstract public class PulsarAuto extends LinearOpMode {
                 this,
                 telemetry
         );
+
+        (new SizingCubeFitter(this)).fitInSizingCube();
+
         telemetry.addLine("Ready");
         telemetry.update();
 
         waitForStart();
 
+        if (alliance != Alliance.BLUE) leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
+        if (alliance != Alliance.RED) rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
 
         jewel.setPosition(alliance.getJewelDownPosition(startPosition));
 
