@@ -18,5 +18,8 @@ public class LinearServoTest extends OpMode{
     @Override
     public void loop() {
         conveyorLift.setPosition((-gamepad1.left_stick_y));
+        telemetry.addData("gp loc", -gamepad1.left_stick_y);
+        telemetry.addData("servo", conveyorLift.getPosition());
+        telemetry.update();
     }
 }

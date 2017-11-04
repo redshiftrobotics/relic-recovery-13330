@@ -33,6 +33,9 @@ public class MecanumTeleop extends OpMode{
 
     @Override
     public void init() {
+        telemetry.addLine("Initializing for TeleOp!");
+        telemetry.update();
+
         frontLeft = hardwareMap.dcMotor.get("fl");
         frontRight = hardwareMap.dcMotor.get("fr");
         backLeft = hardwareMap.dcMotor.get("bl");
@@ -50,6 +53,9 @@ public class MecanumTeleop extends OpMode{
         collectorRight = hardwareMap.servo.get("collectorRight");
 
         setServos();
+
+        telemetry.addLine("Ready for TeleOp!");
+        telemetry.update();
     }
 
     /*
@@ -90,6 +96,8 @@ public class MecanumTeleop extends OpMode{
 
         collectorLeft.setPosition(0.38);
         collectorRight.setPosition(0.66);
+
+        conveyorLift.setPosition(0.28);
     }
 
     private void drive() {
