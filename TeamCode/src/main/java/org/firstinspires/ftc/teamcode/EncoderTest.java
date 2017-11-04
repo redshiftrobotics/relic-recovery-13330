@@ -1,17 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-<<<<<<< HEAD
 import org.redshiftrobotics.lib.AutoOpMode;
 
 /**
  * Created by ariporad on 2017-10-18.
  */
 
-public class EncoderTest extends AutoOpMode {
-    @Override
-    public void init() {
-        super.init();
-=======
+/*
+>>>>>>> 17679da... .
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -55,6 +51,7 @@ public class EncoderTest extends OpMode {
         telemetry.addData("Position", positioner.getPosition());
         telemetry.update();
     }
-}
+
+}*/
 
 >>>>>>> 38dc098... add encoders
