@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
  * Created by Duncan on 10/4/2017.
  */
 @Autonomous(name="Pixy Cam Tracking")
+@Disabled
 public class PixyCamTrack extends LinearOpMode {
 
     I2cDeviceSynch pixy;

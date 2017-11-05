@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
  * Created by Duncan on 10/2/2017.
  */
 @Autonomous(name = "Test Auto for Values")
+@Disabled
 public class PixyCamTestValues  extends LinearOpMode {
     I2cDeviceSynch pixy;
     byte[] readCache;

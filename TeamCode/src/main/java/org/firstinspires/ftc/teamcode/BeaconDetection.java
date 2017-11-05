@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.vuforia.CameraCalibration;
 import com.vuforia.HINT;
@@ -34,6 +35,7 @@ import java.util.Arrays;
  * Created by Duncan on 10/14/2017.
  */
 @Autonomous(name="BeaconDetection")
+@Disabled
 public class BeaconDetection extends LinearOpMode{
 
     public final static Scalar blueLow = new Scalar(108,0,220);

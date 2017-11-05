@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,6 +12,7 @@ import org.redshiftrobotics.lib.descartes.UltrasonicDistanceSensor;
  */
 
 @TeleOp(name = "Ultra Test")
+@Disabled
 public class UltraTest extends OpMode {
     UltrasonicDistanceSensor ultra;
 
