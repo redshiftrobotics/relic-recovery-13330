@@ -55,7 +55,6 @@ import java.util.Locale;
  * @see <a href="http://www.adafruit.com/products/2472">Adafruit IMU</a>
  */
 @Autonomous(name = "Sensor: BNO055 IMU", group = "Sensor")
-@Disabled                            // Comment this out to add to the opmode list
 public class SensorBNO055IMU extends LinearOpMode
     {
     //----------------------------------------------------------------------------------------------
@@ -68,6 +67,9 @@ public class SensorBNO055IMU extends LinearOpMode
     // State used for updating telemetry
     Orientation angles;
     Acceleration gravity;
+    Position position;
+    Acceleration acceleration;
+        Acceleration lacc;
 
     //----------------------------------------------------------------------------------------------
     // Main logic
@@ -81,7 +83,7 @@ public class SensorBNO055IMU extends LinearOpMode
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.calibrationDataFile = "IMUConfig.json"; // see the calibration sample opmode
         parameters.loggingEnabled      = true;
         parameters.loggingTag          = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
@@ -92,6 +94,7 @@ public class SensorBNO055IMU extends LinearOpMode
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
+
         // Set up our telemetry dashboard
         composeTelemetry();
 
@@ -99,7 +102,7 @@ public class SensorBNO055IMU extends LinearOpMode
         waitForStart();
 
         // Start the logging of measured acceleration
-        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+        imu.startAccelerationIntegration(null, null, 10);
 
         // Loop and update the dashboard
         while (opModeIsActive()) {
@@ -122,6 +125,9 @@ public class SensorBNO055IMU extends LinearOpMode
                 // three times the necessary expense.
                 angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 gravity  = imu.getGravity();
+                position = imu.getPosition();
+                acceleration = imu.getAcceleration();
+                    lacc = imu.getLinearAcceleration();
                 }
             });
 
@@ -134,6 +140,23 @@ public class SensorBNO055IMU extends LinearOpMode
             .addData("calib", new Func<String>() {
                 @Override public String value() {
                     return imu.getCalibrationStatus().toString();
+                    }
+                });
+
+        telemetry.addLine()
+                .addData("position", new Func<String>() {
+                    @Override public String value() {
+                        return position.toString();
+                    }
+                })
+                .addData("linear acceleration", new Func<String>() {
+                    @Override public String value() {
+                        return lacc.toString();
+                    }
+                })
+                .addData("acceleration", new Func<String>() {
+                    @Override public String value() {
+                        return acceleration.toString();
                     }
                 });
 
