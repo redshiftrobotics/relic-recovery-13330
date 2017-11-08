@@ -99,7 +99,6 @@ import java.util.Locale;
  * @see <a href="https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST_BNO055_DS000_14.pdf">BNO055 specification</a>
  */
 @TeleOp(name = "Sensor: BNO055 IMU Calibration", group = "Sensor")
-@Disabled                            // Uncomment this to add to the opmode list
 public class SensorBNO055IMUCalibration extends LinearOpMode
     {
     //----------------------------------------------------------------------------------------------
@@ -151,19 +150,7 @@ public class SensorBNO055IMUCalibration extends LinearOpMode
 
             if (gamepad1.a) {
 
-                // Get the calibration data
-                BNO055IMU.CalibrationData calibrationData = imu.readCalibrationData();
-
-                // Save the calibration data to a file. You can choose whatever file
-                // name you wish here, but you'll want to indicate the same file name
-                // when you initialize the IMU in an opmode in which it is used. If you
-                // have more than one IMU on your robot, you'll of course want to use
-                // different configuration file names for each.
-                String filename = "AdafruitIMUCalibration.json";
-                File file = AppUtil.getInstance().getSettingsFile(filename);
-                ReadWriteFile.writeFile(file, calibrationData.serialize());
-                telemetry.log().add("saved to '%s'", filename);
-
+                saveConfig();
                 // Wait for the button to be released
                 while (gamepad1.a) {
                     telemetry.update();
@@ -173,6 +160,25 @@ public class SensorBNO055IMUCalibration extends LinearOpMode
 
             telemetry.update();
         }
+
+        saveConfig();
+    }
+
+
+    void saveConfig() {
+
+        // Get the calibration data
+        BNO055IMU.CalibrationData calibrationData = imu.readCalibrationData();
+
+        // Save the calibration data to a file. You can choose whatever file
+        // name you wish here, but you'll want to indicate the same file name
+        // when you initialize the IMU in an opmode in which it is used. If you
+        // have more than one IMU on your robot, you'll of course want to use
+        // different configuration file names for each.
+        String filename = "IMUConfig.json";
+        File file = AppUtil.getInstance().getSettingsFile(filename);
+        ReadWriteFile.writeFile(file, calibrationData.serialize());
+        telemetry.log().add("saved to '%s'", filename);
     }
 
     void composeTelemetry() {
