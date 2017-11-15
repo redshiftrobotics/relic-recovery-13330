@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+echo "Building and Running..."
+
+echo "Building..." && \
+./gradlew assembleDebug && \
+echo "Running..." && \
+adb install TeamCode/build/outputs/apk/TeamCode-debug.apk
