@@ -6,12 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.redshiftrobotics.lib.AutoOpMode;
-import org.redshiftrobotics.lib.Positioner;
-import org.redshiftrobotics.lib.encoder.DcMotorEncoder;
-import org.redshiftrobotics.lib.encoder.EncoderPositioner;
-
 /**
  * Created by Duncan on 9/19/2017.
  */
