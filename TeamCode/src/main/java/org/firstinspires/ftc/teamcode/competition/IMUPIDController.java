@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode;
-
-import java.util.*;
+package org.firstinspires.ftc.teamcode.competition;
 
 /**
  * Created by adam on 9/16/17.

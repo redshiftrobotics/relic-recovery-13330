@@ -5,4 +5,6 @@ echo "Building and Running..."
 echo "Building..." && \
 ./gradlew assembleDebug && \
 echo "Running..." && \
-adb install TeamCode/build/outputs/apk/TeamCode-debug.apk
+adb install -r TeamCode/build/outputs/apk/TeamCode-debug.apk && \
+echo "Launching..." && \
+adb shell am start -n com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity

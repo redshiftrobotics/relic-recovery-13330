@@ -49,9 +49,9 @@ public class RevIMUTestOpMode extends OpMode {
 
         telemetry.clearAll();
 
-        telemetry.addData("X", position.x);
-        telemetry.addData("Y", position.y);
-        telemetry.addData("Z", position.z);
+        telemetry.addData("x", angles.firstAngle);
+        telemetry.addData("y", angles.secondAngle);
+        telemetry.addData("z", angles.thirdAngle);
         telemetry.addData("Unit", position.unit);
 
         telemetry.update();

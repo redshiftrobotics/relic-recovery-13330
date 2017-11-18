@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.competition;
 
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -7,7 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.redshiftrobotics.lib.*;
+import org.firstinspires.ftc.teamcode.Conversion;
+import org.redshiftrobotics.lib.pid.Vector2D;
 
 /**
  * Created by adam on 10/11/17.
@@ -26,7 +27,7 @@ public class MecanumRobot {
    // CoordinatePIDController xyController;
 
     // Our PID controller instance
-    IMUPIDController imupidController;
+    public IMUPIDController imupidController;
 
     // An imu wrapper instance, used mainly for testing, but also additional
     // abstraction.
