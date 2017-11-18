@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -9,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by Duncan on 11/15/2017.
  */
-
+@TeleOp(name="Pulsar P Teleop", group="Pulsar")
 public class PulsarPTeleop extends OpMode{
 
     DcMotor frontLeft;
@@ -59,17 +60,17 @@ public class PulsarPTeleop extends OpMode{
         backRight = hardwareMap.dcMotor.get("br");
         //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        conveyor = hardwareMap.dcMotor.get("conveyor");
-        conveyorLift = hardwareMap.servo.get("conveyorLift");
-        leftIntake = hardwareMap.dcMotor.get("leftIntake");
-        rightIntake = hardwareMap.dcMotor.get("rightIntake");
-        leftJewel = hardwareMap.servo.get("leftJewel");
-        rightJewel = hardwareMap.servo.get("rightJewel");
+        //conveyor = hardwareMap.dcMotor.get("conveyor");
+        //conveyorLift = hardwareMap.servo.get("conveyorLift");
+        //leftIntake = hardwareMap.dcMotor.get("leftIntake");
+        //rightIntake = hardwareMap.dcMotor.get("rightIntake");
+        //leftJewel = hardwareMap.servo.get("leftJewel");
+        //rightJewel = hardwareMap.servo.get("rightJewel");
 
-        collectorLeft = hardwareMap.servo.get("collectorLeft");
-        collectorRight = hardwareMap.servo.get("collectorRight");
+        //collectorLeft = hardwareMap.servo.get("collectorLeft");
+        //collectorRight = hardwareMap.servo.get("collectorRight");
 
-        setServos();
+        //setServos();
 
         lastTime = System.currentTimeMillis();
 
@@ -129,6 +130,9 @@ public class PulsarPTeleop extends OpMode{
         telemetry.addData("FR", frPower);
         telemetry.addData("BL", blPower);
         telemetry.addData("BR", brPower);
+        telemetry.addData("XP", xPower);
+        telemetry.addData("YP", yPower);
+        telemetry.addData("AP", anglePower);
         telemetry.update();
     }
 
