@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import org.firstinspires.ftc.teamcode.competition.IMU;
+import org.redshiftrobotics.lib.pid.IMU;
 
 /**
  * Created by adam on 9/26/17.

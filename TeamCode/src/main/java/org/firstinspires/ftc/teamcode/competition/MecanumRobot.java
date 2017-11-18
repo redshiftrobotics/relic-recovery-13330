@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Conversion;
+import org.redshiftrobotics.lib.pid.IMUImpl;
+import org.redshiftrobotics.lib.pid.IMUPIDController;
 import org.redshiftrobotics.lib.pid.Vector2D;
 
 /**

@@ -39,15 +39,17 @@ public class PulsarPTeleop extends OpMode{
     double anglePower = 0;
     double targetAngle = 180;
     double currentAngle = 180;
+    double cryptoboxAngle = 104;
+    double lastAngle = 180;
     double pConstant = 3;
+
+    boolean isTurning = false;
 
     double flPower = 0;
     double frPower = 0;
     double blPower = 0;
     double brPower = 0;
-
-    long currentTime;
-    long lastTime;
+    double maxPower = 0;
 
     String fuckingDebug = "nothing";
 
@@ -77,8 +79,6 @@ public class PulsarPTeleop extends OpMode{
 
         //setServos();
 
-        lastTime = System.currentTimeMillis();
-
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -89,8 +89,6 @@ public class PulsarPTeleop extends OpMode{
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
         imu.initialize(parameters);
-
-        currentTime = System.currentTimeMillis();
 
         telemetry.addLine("Ready for TeleOp!");
         telemetry.update();
@@ -108,40 +106,39 @@ public class PulsarPTeleop extends OpMode{
 
     @Override
     public void loop() {
-        UpdateTime();
-        UpdateController(gamepad1);
-        CalculateP();
-        Drive();
+        UpdateMovements(gamepad1);
+        UpdatePConstants(gamepad2);
+        CalculateMovements();
+        ControlRobot();
+        StoreRotation(gamepad2);
         UpdateTelemetry();
     }
 
-    public void UpdateTime(){
-        lastTime = currentTime;
-        currentTime = System.currentTimeMillis();
+    public void StoreRotation(Gamepad pad) { //Function that updates the stored rotation, can be customized to use a specific controller
+        if (pad.back) cryptoboxAngle = currentAngle;
+        if (pad.a) targetAngle = cryptoboxAngle;
     }
 
-    public void UpdateController(Gamepad pad){
+    public void UpdateMovements(Gamepad pad){ //Function that updates the movement constants, can be customized to use a specific controller
         xPower = pad.right_stick_x;
         yPower = pad.right_stick_y;
         anglePower = pad.left_stick_x;
+    }
 
+    public void UpdatePConstants(Gamepad pad){ //Function that updates the P constants, can be customized to use a specific controller
         if (pad.left_bumper != lastLB) { pConstant += 0.2; }
         if (pad.right_bumper != lastRB) { pConstant -= 0.2; }
         lastLB = pad.left_bumper; lastRB = pad.right_bumper;
     }
 
-    public void Drive(){
-        flPower = yPower - xPower + pPower + anglePower;
-        frPower = yPower + xPower - pPower - anglePower;
-        blPower = yPower + xPower + pPower + anglePower;
-        brPower = yPower - xPower - pPower - anglePower;
+    public void ControlRobot(){ //Function to control all hardware devices on the robot
         frontLeft.setPower(flPower);
         frontRight.setPower(frPower);
         backLeft.setPower(blPower);
         backRight.setPower(brPower);
     }
 
-    public void UpdateTelemetry(){
+    public void UpdateTelemetry(){ //Function to telemetry out important values
         telemetry.addData("Current Angle", currentAngle + ", Target Angle: " + targetAngle);
         telemetry.addData("debug", fuckingDebug);
         telemetry.addData("pConstant", pConstant);
@@ -156,9 +153,12 @@ public class PulsarPTeleop extends OpMode{
         telemetry.update();
     }
 
-    public void CalculateP(){
+    public void CalculateMovements(){ //Function to control the robot's movements, this includes calculating P and calculating the motor powers
+        lastAngle = currentAngle;
         currentAngle = imu.getAngularOrientation().firstAngle + 180f;
-        if(anglePower!=0){
+        if (anglePower != 0) isTurning = true;
+        if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;
+        if(isTurning){
             targetAngle=currentAngle;
             pPower = 0f;
         }else {
@@ -178,5 +178,20 @@ public class PulsarPTeleop extends OpMode{
         }
         pPower = Range.clip(pPower / -180f, -1, 1);
 
+        flPower = (yPower - xPower + pPower + anglePower);
+        frPower = (yPower + xPower - pPower - anglePower);
+        blPower = (yPower + xPower + pPower + anglePower);
+        brPower = (yPower - xPower - pPower - anglePower);
+
+        maxPower = Math.abs(flPower);
+        if(Math.abs(frPower)>maxPower) maxPower=Math.abs(frPower);
+        if(Math.abs(blPower)>maxPower) maxPower=Math.abs(blPower);
+        if(Math.abs(brPower)>maxPower) maxPower=Math.abs(brPower);
+        if(maxPower<1) maxPower=1;
+
+        flPower /= maxPower;
+        frPower /= maxPower;
+        blPower /= maxPower;
+        brPower /= maxPower;
     }
 }

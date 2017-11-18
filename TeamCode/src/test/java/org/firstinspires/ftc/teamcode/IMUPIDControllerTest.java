@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import junit.framework.TestCase;
 
-import org.firstinspires.ftc.teamcode.competition.IMUPIDController;
+import org.redshiftrobotics.lib.pid.IMUPIDController;
 
 
 /**
