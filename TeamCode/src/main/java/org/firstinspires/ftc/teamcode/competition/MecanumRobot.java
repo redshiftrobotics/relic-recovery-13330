@@ -23,7 +23,7 @@ import org.redshiftrobotics.lib.pid.Vector2D;
 public class MecanumRobot {
 
     // Our motors. Assumes a four motor standard mecanum chassis.
-    public DcMotor frontLeft, frontRight, backLeft, backRight;
+    public DcMotor frontLeft, frontRight, backLeft, backRight, encoderMotor;
 
 
    // CoordinatePIDController xyController;
@@ -67,6 +67,7 @@ public class MecanumRobot {
         this.frontRight = fr;
         this.backLeft = bl;
         this.backRight = br;
+        this.encoderMotor = this.frontLeft;
 
         imuImpl = new IMUImpl(imu);
     //    xyController = new CoordinatePIDController(detector);
@@ -180,10 +181,11 @@ public class MecanumRobot {
 
 
 
+        int encoderDistance = Conversion.cmToEncoder(cmDistance);
         // This Conversion class contains all the conversion factors we need to switch between
         // encoders and cm.
 
-        int encoderDistance = Conversion.cmToEncoder(cmDistance);
+      /*  int encoderDistance = Conversion.cmToEncoder(cmDistance);
 
         // figure out whether to add or subtract encoder rotations based on the direction we're moving
         float encoderDirectionSign = Math.signum((float)velocityYComponent);
@@ -203,10 +205,12 @@ public class MecanumRobot {
         float targetEncoderRotation = initialEncoderRotation + encoderDirectionSign * encoderDistance;
         //-1000 + 1000 = 0
 
+        */
 
+        int initialEncoderRotation = encoderMotor.getCurrentPosition();
         if (DEBUG) {
-            tm.addData("Encoder Distance: " + Integer.toString(encoderDistance), "");
-            tm.addData("Encoder direction: ", encoderDirectionSign);
+            tm.addData("Encoder Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
+            tm.addData("Encoder direction: ", "");
             tm.update();
             try {
                 Thread.sleep(1000);
@@ -226,15 +230,15 @@ public class MecanumRobot {
         // We need to account for elapsed time, potential stop conditions from the opmode container,
         // and changes in encoder position.
 
-        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - frontLeft.getCurrentPosition()) <= encoderDistance) {
+        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - encoderMotor.getCurrentPosition()) <= encoderDistance) {
          /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
 
             if (DEBUG) {
                // tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
                 // tm.update();
-                tm.addData(" Front Left Position: ", frontLeft.getCurrentPosition());
-                tm.addData("Target Position: ", targetEncoderRotation);
+                tm.addData(" Front Left Position: ", encoderMotor.getCurrentPosition());
+                tm.addData("Target Position: ", encoderDistance);
                 tm.update();
             }
 
@@ -279,10 +283,11 @@ public class MecanumRobot {
                 tm.addData("Error!", "");
                 tm.update();
             }
-            imupidController.addTarget(robotAngle);
             tm.addData("New Target: ", imupidController.target);
             tm.update();
         }
+
+        imupidController.addTarget(robotAngle);
 
         // Time accounting
 
