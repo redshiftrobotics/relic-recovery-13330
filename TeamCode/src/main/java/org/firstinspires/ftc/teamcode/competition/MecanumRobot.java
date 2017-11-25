@@ -41,12 +41,13 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 0.2f;
+    static float ANGLE_THRESHOLD = 0.1f;
 
     /**
      * Our tuning constants for the mecanum chassis.
      */
-    static float P_TUNING = 150f, I_TUNING = /*2.0e-4f*/ 2.0e-1f, D_TUNING = 0f;
+    private static float P_TUNING_STRAIGHT = 100f, I_TUNING_STRAIGHT = /*2.0e-4f*/ 0f, D_TUNING_STRAIGHT = 0f;
+    private static float P_TUNING_TURN = 100f, I_TUNING_TURN = 0.0069f, D_TUNING_TURN = 0f;
 
     // Simple debug enable/disable
     static boolean DEBUG = true;
@@ -67,7 +68,7 @@ public class MecanumRobot {
         this.frontRight = fr;
         this.backLeft = bl;
         this.backRight = br;
-        this.encoderMotor = this.frontLeft;
+        this.encoderMotor = this.backLeft;
 
         imuImpl = new IMUImpl(imu);
     //    xyController = new CoordinatePIDController(detector);
@@ -140,11 +141,13 @@ public class MecanumRobot {
 
         // These tunings have been established through our PID testing, and are good for
         // straight motion.
-        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+        imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
+        imupidController.setTarget(180);
 
         // Good to have a debug mode to enable/disable telemetry
         if (DEBUG) {
-            tm.addData("P: " + imupidController.P + " I: " + imupidController.I + " D: " + imupidController.D, "");
+            tm.addData("P: " + imupidController.P, "");
+            tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
             tm.addData("speed", speed);
             tm.addData("angle", angle);
             tm.addData("timeout", timeout);
@@ -210,7 +213,7 @@ public class MecanumRobot {
         int initialEncoderRotation = encoderMotor.getCurrentPosition();
         if (DEBUG) {
             tm.addData("Encoder Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
-            tm.addData("Encoder direction: ", "");
+            tm.addData("Encoder Target Distance: ", encoderDistance);
             tm.update();
             try {
                 Thread.sleep(1000);
@@ -249,6 +252,7 @@ public class MecanumRobot {
             elapsedTime = currSysTime - startTime;
             loopTime = currSysTime - loopTime;
         }
+        STOP();
     }
 
     public void turn(double robotAngle, long timeout) {
@@ -267,7 +271,7 @@ public class MecanumRobot {
 
     public void turn(float robotAngle, long timeout) {
         // Set tuning for turning
-        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+       imupidController.setTuning(P_TUNING_TURN, I_TUNING_TURN, D_TUNING_TURN);
 
         // Clear out past data.
         imupidController.clearData();
@@ -283,11 +287,21 @@ public class MecanumRobot {
                 tm.addData("Error!", "");
                 tm.update();
             }
-            tm.addData("New Target: ", imupidController.target);
-            tm.update();
         }
 
         imupidController.addTarget(robotAngle);
+
+        if (DEBUG) {
+            tm.addData("New Target: ", imupidController.target);
+            tm.update();
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                tm.addData("Error!", "");
+                tm.update();
+            }
+        }
 
         // Time accounting
 
@@ -299,7 +313,8 @@ public class MecanumRobot {
         while (elapsedTime <= timeout && context.opModeIsActive()) {
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
             if (DEBUG) {
-                tm.addData("P: ", imupidController.P);
+                tm.addData("P: " + imupidController.P, "");
+                tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
                 tm.update();
             }
 
@@ -320,6 +335,7 @@ public class MecanumRobot {
                 break;
             }
         }
+        STOP();
     }
 
 

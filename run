@@ -7,4 +7,4 @@ echo "Building..." && \
 echo "Running..." && \
 adb install -r TeamCode/build/outputs/apk/TeamCode-debug.apk && \
 echo "Launching..." && \
-adb shell am start -n com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
+adb shell am start -n com.qualcomm.ftcrobotcontroller/org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity && sleep 3 && say "Pulsar Ready"
