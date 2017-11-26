@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config name="default">
+	<double name="encoderTicksPerCM">1440</double>
+	<double name="conveyorPowerScalar">0.5</double>
+	<config name="hw:pos">
+		<double name="jewel:left:up">0.2</double>
+		<double name="jewel:left:down">TODO</double>
+		<double name="jewel:right:up">0.55</double>
+		<double name="jewel:right:down">TODO</double>
+		<double name="collector:left:down">0.38</double>
+		<double name="collector:right:down">0.66</double>
+		<double name="conveyor:teleopPosition">0.28</double>
+	</config>
+	<config name="auto">
+		<double name="distanceToClearStone">26.5</double>
+		<config name="blue">
+			<double name="jewelUpPosition">0.2</double>
+			<double name="jewelDownPosition">0.785</double>
+			<double name="jewelDownAltPosition">0.75</double>
+			<double name="frontJewelKnockOffAngle">10</double>
+			<double name="angleToFaceCryptobox">-90</double>
+		</config>
+		<config name="red">
+			<double name="jewelUpPosition">0.55</double>
+			<double name="jewelDownPosition">0.235</double>
+			<double name="jewelDownAltPosition">0.25</double>
+			<double name="frontJewelKnockOffAngle">-10</double>
+			<double name="angleToFaceCryptobox">90</double>
+		</config>
+	</config>
+	<config name="pid">
+		<boolean name="newIMU">true</boolean>
+		<double name="angleThreshold">0.1</double>
+		<!-- Divide all corrections by 2000 to make sure we don't overflow. Not a good solution!!! -->
+		<double name="correctionsScalar">2000</double>
+		<config name="tuning-turns">
+			<double name="pConst">100</double>
+			<double name="iConst">0.0069</double>
+			<double name="dConst">0</double>
+			<double name="maxI">5</double>
+		</config>
+		<config name="tuning-straight">
+			<double name="pConst">100</double>
+			<double name="iConst">0</double> <!-- 2.0e-4f -->
+			<double name="dConst">0</double>
+			<double name="maxI">5</double>
+		</config>
+	</config>
+</config>
