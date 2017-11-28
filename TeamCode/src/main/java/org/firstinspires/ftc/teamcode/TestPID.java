@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.competition.MecanumRobot;
+
 /**
  * Created by adam on 10/17/17.
  */
@@ -32,25 +34,17 @@ public class TestPID extends LinearOpMode {
                 backRight,
                 imu, this, telemetry);
       //  robot.imupidController.setTuning(0, 0, 0);
-        robot.imupidController.setTuning(1, 1, 1);
+       // robot.imupidController.setTuning(1, 1, 1);
 
         waitForStart();
 
-        robot.moveStraight(1, 3 * Math.PI/2, 2000, 10);
-        robot.STOP();
+        robot.moveStraight(1,  3*Math.PI/2, 2000, 10);
 
         telemetry.addData("Turning... ", "");
         telemetry.update();
-        Thread.sleep(5000);
         robot.turn(45, 5000);
-        robot.STOP();
-        Thread.sleep(5000);
         robot.turn(90, 5000);
-        robot.STOP();
-        Thread.sleep(5000);
         robot.turn(-90, 5000);
-        robot.STOP();
-
 
     }
 }

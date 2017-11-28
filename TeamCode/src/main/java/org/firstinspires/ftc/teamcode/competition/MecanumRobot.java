@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.competition;
 
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -7,7 +7,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.redshiftrobotics.lib.*;
+import org.firstinspires.ftc.teamcode.Conversion;
+import org.redshiftrobotics.lib.pid.IMUImpl;
+import org.redshiftrobotics.lib.pid.IMUPIDController;
+import org.redshiftrobotics.lib.pid.Vector2D;
 
 /**
  * Created by adam on 10/11/17.
@@ -20,13 +23,13 @@ import org.redshiftrobotics.lib.*;
 public class MecanumRobot {
 
     // Our motors. Assumes a four motor standard mecanum chassis.
-    public DcMotor frontLeft, frontRight, backLeft, backRight;
+    public DcMotor frontLeft, frontRight, backLeft, backRight, encoderMotor;
 
 
    // CoordinatePIDController xyController;
 
     // Our PID controller instance
-    IMUPIDController imupidController;
+    public IMUPIDController imupidController;
 
     // An imu wrapper instance, used mainly for testing, but also additional
     // abstraction.
@@ -38,12 +41,13 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 0.2f;
+    static float ANGLE_THRESHOLD = 0.1f;
 
     /**
      * Our tuning constants for the mecanum chassis.
      */
-    static float P_TUNING = 150f, I_TUNING = /*2.0e-4f*/ 2.0e-1f, D_TUNING = 0f;
+    private static float P_TUNING_STRAIGHT = 100f, I_TUNING_STRAIGHT = /*2.0e-4f*/ 0f, D_TUNING_STRAIGHT = 0f;
+    private static float P_TUNING_TURN = 100f, I_TUNING_TURN = 0.0069f, D_TUNING_TURN = 0f;
 
     // Simple debug enable/disable
     static boolean DEBUG = true;
@@ -64,6 +68,7 @@ public class MecanumRobot {
         this.frontRight = fr;
         this.backLeft = bl;
         this.backRight = br;
+        this.encoderMotor = this.backLeft;
 
         imuImpl = new IMUImpl(imu);
     //    xyController = new CoordinatePIDController(detector);
@@ -136,11 +141,13 @@ public class MecanumRobot {
 
         // These tunings have been established through our PID testing, and are good for
         // straight motion.
-        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+        imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
+        imupidController.setTarget(180);
 
         // Good to have a debug mode to enable/disable telemetry
         if (DEBUG) {
-            tm.addData("P: " + imupidController.P + " I: " + imupidController.I + " D: " + imupidController.D, "");
+            tm.addData("P: " + imupidController.P, "");
+            tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
             tm.addData("speed", speed);
             tm.addData("angle", angle);
             tm.addData("timeout", timeout);
@@ -177,10 +184,11 @@ public class MecanumRobot {
 
 
 
+        int encoderDistance = Conversion.cmToEncoder(cmDistance);
         // This Conversion class contains all the conversion factors we need to switch between
         // encoders and cm.
 
-        int encoderDistance = Conversion.cmToEncoder(cmDistance);
+      /*  int encoderDistance = Conversion.cmToEncoder(cmDistance);
 
         // figure out whether to add or subtract encoder rotations based on the direction we're moving
         float encoderDirectionSign = Math.signum((float)velocityYComponent);
@@ -200,10 +208,12 @@ public class MecanumRobot {
         float targetEncoderRotation = initialEncoderRotation + encoderDirectionSign * encoderDistance;
         //-1000 + 1000 = 0
 
+        */
 
+        int initialEncoderRotation = encoderMotor.getCurrentPosition();
         if (DEBUG) {
-            tm.addData("Encoder Distance: " + Integer.toString(encoderDistance), "");
-            tm.addData("Encoder direction: ", encoderDirectionSign);
+            tm.addData("Encoder Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
+            tm.addData("Encoder Target Distance: ", encoderDistance);
             tm.update();
             try {
                 Thread.sleep(1000);
@@ -223,15 +233,15 @@ public class MecanumRobot {
         // We need to account for elapsed time, potential stop conditions from the opmode container,
         // and changes in encoder position.
 
-        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - frontLeft.getCurrentPosition()) <= encoderDistance) {
+        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - encoderMotor.getCurrentPosition()) <= encoderDistance) {
          /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
 
             if (DEBUG) {
                // tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
                 // tm.update();
-                tm.addData(" Front Left Position: ", frontLeft.getCurrentPosition());
-                tm.addData("Target Position: ", targetEncoderRotation);
+                tm.addData(" Front Left Position: ", encoderMotor.getCurrentPosition());
+                tm.addData("Target Position: ", encoderDistance);
                 tm.update();
             }
 
@@ -242,6 +252,7 @@ public class MecanumRobot {
             elapsedTime = currSysTime - startTime;
             loopTime = currSysTime - loopTime;
         }
+        STOP();
     }
 
     public void turn(double robotAngle, long timeout) {
@@ -260,7 +271,7 @@ public class MecanumRobot {
 
     public void turn(float robotAngle, long timeout) {
         // Set tuning for turning
-        imupidController.setTuning(P_TUNING, I_TUNING, D_TUNING);
+       imupidController.setTuning(P_TUNING_TURN, I_TUNING_TURN, D_TUNING_TURN);
 
         // Clear out past data.
         imupidController.clearData();
@@ -276,9 +287,20 @@ public class MecanumRobot {
                 tm.addData("Error!", "");
                 tm.update();
             }
-            imupidController.addTarget(robotAngle);
+        }
+
+        imupidController.addTarget(robotAngle);
+
+        if (DEBUG) {
             tm.addData("New Target: ", imupidController.target);
             tm.update();
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                tm.addData("Error!", "");
+                tm.update();
+            }
         }
 
         // Time accounting
@@ -291,7 +313,8 @@ public class MecanumRobot {
         while (elapsedTime <= timeout && context.opModeIsActive()) {
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
             if (DEBUG) {
-                tm.addData("P: ", imupidController.P);
+                tm.addData("P: " + imupidController.P, "");
+                tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
                 tm.update();
             }
 
@@ -312,6 +335,7 @@ public class MecanumRobot {
                 break;
             }
         }
+        STOP();
     }
 
 
