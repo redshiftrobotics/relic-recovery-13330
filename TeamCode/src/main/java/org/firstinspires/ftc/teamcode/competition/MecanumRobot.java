@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Conversion;
+import org.redshiftrobotics.lib.config.ConfigurationManager;
 import org.redshiftrobotics.lib.pid.IMUImpl;
 import org.redshiftrobotics.lib.pid.IMUPIDController;
 import org.redshiftrobotics.lib.pid.Vector2D;
@@ -41,18 +42,20 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 0.1f;
+    private static float ANGLE_THRESHOLD = (float) ConfigurationManager.getSharedInstance().getConfig("pid").getDouble("angleThreshold");
+    private static double CORRECTIONS_SCALAR = ConfigurationManager.getSharedInstance().getConfig("pid").getDouble("correctionScalar");
 
     /**
      * Our tuning constants for the mecanum chassis.
      */
-    private static float P_TUNING_STRAIGHT = 100f, I_TUNING_STRAIGHT = /*2.0e-4f*/ 0f, D_TUNING_STRAIGHT = 0f;
-    private static float P_TUNING_TURN = 100f, I_TUNING_TURN = 0.0069f, D_TUNING_TURN = 0f;
+    private static final ConfigurationManager TUNING_STRAIGHT = ConfigurationManager.getSharedInstance().getConfig("pid").getConfig("tuning-straight");
+    private static final ConfigurationManager TUNING_TURNS = ConfigurationManager.getSharedInstance().getConfig("pid").getConfig("tuning-turns");
 
     // Simple debug enable/disable
-    static boolean DEBUG = true;
+    private static boolean DEBUG = ConfigurationManager.getSharedInstance().getConfig("pid").getBoolean("debug", false);
 
-    /** Primary Constructor
+    /**
+     * Primary Constructor
      *
      * @param fl Front left motor
      * @param fr Front right motor
@@ -141,7 +144,12 @@ public class MecanumRobot {
 
         // These tunings have been established through our PID testing, and are good for
         // straight motion.
-        imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
+        imupidController.setTuning(
+                (float) TUNING_STRAIGHT.getDouble("pConst"),
+                (float) TUNING_STRAIGHT.getDouble("iConst"),
+                (float) TUNING_STRAIGHT.getDouble("dConst"),
+                (float) TUNING_STRAIGHT.getDouble("maxI")
+        );
         imupidController.setTarget(180);
 
         // Good to have a debug mode to enable/disable telemetry
@@ -271,12 +279,15 @@ public class MecanumRobot {
 
     public void turn(float robotAngle, long timeout) {
         // Set tuning for turning
-       imupidController.setTuning(P_TUNING_TURN, I_TUNING_TURN, D_TUNING_TURN);
+        imupidController.setTuning(
+                (float) TUNING_TURNS.getDouble("pConst"),
+                (float) TUNING_TURNS.getDouble("iConst"),
+                (float) TUNING_TURNS.getDouble("dConst"),
+                (float) TUNING_TURNS.getDouble("maxI")
+        );
 
         // Clear out past data.
         imupidController.clearData();
-
-
 
         if (DEBUG) {
             tm.addData("Target: ", imupidController.target);
@@ -364,10 +375,10 @@ public class MecanumRobot {
             // should be added to a power constant in order to make the wheels turn at a reasonable
             //speed. For small corrections during straight movement though, this is unnecessary.
 
-            double frontLeftPower = velocityY  - velocityX  - correctionAngular/2000;
-            double frontRightPower = velocityY + velocityX  + correctionAngular/2000;
-            double backRightPower = velocityY - velocityX + correctionAngular/2000;
-            double backLeftPower = velocityY + velocityX - correctionAngular/2000;
+            double frontLeftPower = velocityY  - velocityX  - correctionAngular/CORRECTIONS_SCALAR;
+            double frontRightPower = velocityY + velocityX  + correctionAngular/CORRECTIONS_SCALAR;
+            double backRightPower = velocityY - velocityX + correctionAngular/CORRECTIONS_SCALAR;
+            double backLeftPower = velocityY + velocityX - correctionAngular/CORRECTIONS_SCALAR;
 
             frontLeft.setPower(frontLeftPower);
             frontRight.setPower(frontRightPower);

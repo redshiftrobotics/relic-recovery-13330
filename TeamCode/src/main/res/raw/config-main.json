@@ -1,0 +1,9 @@
+{
+  "foo": "bar",
+  "baz": 3,
+  "qux": {
+    "ari": 3.1415,
+    "foo": "bleh",
+    "abc": false,
+  }
+}

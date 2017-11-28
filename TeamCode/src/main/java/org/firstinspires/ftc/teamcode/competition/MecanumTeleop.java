@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.competition;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.redshiftrobotics.lib.config.ConfigurationManager;
 
 /**
  * Created by Duncan on 9/19/2017.
@@ -12,7 +16,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Pulsar Teleop")
 public class MecanumTeleop extends OpMode{
-    static double TICKS_PER_CM = 1/1440;
+    private static final double TICKS_PER_CM = 1/ ConfigurationManager.getSharedInstance().getDouble("encoderTicksPerCM");
+
+    private static final ConfigurationManager hwPos = ConfigurationManager.getSharedInstance().getConfig("hw:pos");
+
 
     DcMotor frontLeft;
     DcMotor frontRight;
@@ -35,6 +42,15 @@ public class MecanumTeleop extends OpMode{
     public void init() {
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
+
+        try {
+            ConfigurationManager.setup("default");
+        } catch (Exception e) {
+            telemetry.addLine("ERROR!!!!! EXITING");
+            telemetry.update();
+            Log.e("PulsarAuto", "configuration manager error", e);
+            return;
+        }
 
         frontLeft = hardwareMap.dcMotor.get("fl");
         frontRight = hardwareMap.dcMotor.get("fr");
@@ -70,7 +86,7 @@ public class MecanumTeleop extends OpMode{
 
     float frontLeftPower, frontRightPower, backLeftPower, backRightPower;
 
-    static float CONVEYOR_BELT_POWER_SCALAR = 0.5f;
+    static float CONVEYOR_BELT_POWER_SCALAR = (float) ConfigurationManager.getSharedInstance().getDouble("conveyorPowerScalar");
 
     @Override
     public void loop() {
@@ -94,13 +110,13 @@ public class MecanumTeleop extends OpMode{
     }
 
     private void setServos() {
-        leftJewel.setPosition(0.2);
-        rightJewel.setPosition(0.55);
+        leftJewel.setPosition(ConfigurationManager.getSharedInstance().getDouble("jewel:left:up"));
+        rightJewel.setPosition(ConfigurationManager.getSharedInstance().getDouble("jewel:right:up"));
 
-        collectorLeft.setPosition(0.38);
-        collectorRight.setPosition(0.66);
+        collectorLeft.setPosition(ConfigurationManager.getSharedInstance().getDouble("collector:left:down"));
+        collectorRight.setPosition(ConfigurationManager.getSharedInstance().getDouble("collector:right:down"));
 
-        conveyorLift.setPosition(0.28);
+        conveyorLift.setPosition(ConfigurationManager.getSharedInstance().getDouble("conveyor:teleopPosition"));
     }
 
     private void drive() {
