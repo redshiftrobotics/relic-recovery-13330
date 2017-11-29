@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.sun.tools.javac.jvm.Target;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.ColumnController;
@@ -109,26 +110,32 @@ abstract public class PulsarAuto extends LinearOpMode {
 
      BNO055IMU imu;
 
-     void moveStraight(float speed, long timeout, double cmDistance) {
-        robot.moveStraight(speed, timeout, cmDistance);
+    // void moveStraight(float speed, long timeout, double cmDistance) {
+      //  robot.moveStraight(speed, timeout, cmDistance);
+   // }
+
+    void turn(double degrees, long timeout) {
+        robot.turn(degrees + 180, timeout);
     }
 
     @Override
     public void runOpMode() throws InterruptedException {
+        run();
+        return; /*
         frontLeft = hardwareMap.dcMotor.get("fl");
         frontRight = hardwareMap.dcMotor.get("fr");
         backLeft = hardwareMap.dcMotor.get("bl");
         backRight = hardwareMap.dcMotor.get("br");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         columnController = new ColumnController(hardwareMap);
-        leftJewel = hardwareMap.servo.get("leftJewel");
-        rightJewel = hardwareMap.servo.get("rightJewel");
-        leftJewelDetector = hardwareMap.colorSensor.get("leftJewelDetector");
-        rightJewelDetector = hardwareMap.colorSensor.get("rightJewelDetector");
-        conveyor = hardwareMap.dcMotor.get("conveyor");
+        //leftJewel = hardwareMap.servo.get("leftJewel");
+        //rightJewel = hardwareMap.servo.get("rightJewel");
+        //leftJewelDetector = hardwareMap.colorSensor.get("leftJewelDetector");
+        //rightJewelDetector = hardwareMap.colorSensor.get("rightJewelDetector");
+        //conveyor = hardwareMap.dcMotor.get("conveyor");
 
-        leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
-        rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
+        //leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
+        //rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
 
         jewel = (alliance == Alliance.BLUE) ? leftJewel : rightJewel;
         jewelDetector = (alliance == Alliance.BLUE) ? leftJewelDetector : rightJewelDetector;
@@ -142,13 +149,16 @@ abstract public class PulsarAuto extends LinearOpMode {
                 this,
                 telemetry
         );
+
         telemetry.addLine("Ready");
         telemetry.update();
 
         waitForStart();
 
+        TargetJewelPosition targetJewelPosition = TargetJewelPosition.BACK;
+*/
 
-        jewel.setPosition(alliance.getJewelDownPosition(startPosition));
+        /*jewel.setPosition(alliance.getJewelDownPosition(startPosition));
 
         telemetry.addLine("Jewel Lowered");
         telemetry.update();
@@ -173,25 +183,27 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.update();
 
         Thread.sleep(1000);
+        */
 
-        switch (targetJewelPosition) {
+   /*     switch (targetJewelPosition) {
             case FRONT: break; // We do this later
             case BACK:
-                robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
-                jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-                robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                //jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+                turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
                 break;
             case NONE:
-                jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-                Thread.sleep(1000);
+                // jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+                // Thread.sleep(1000);
                 break;
         }
 
-        moveStraight(1, 5000, alliance.getDistanceToClearStone(startPosition));
+        // for reference: robot.moveStraight(1,  3*Math.PI/2, 2000, 10);
+        robot.moveStraight(1, 3*Math.PI/2, 5000, alliance.getDistanceToClearStone(startPosition));
         Thread.sleep(1000);
 
-        jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-        Thread.sleep(1000);
+        //jewel.setPosition(alliance.getJewelUpPosition(startPosition));
+        //Thread.sleep(1000);
 
         if (PULSAR_SIMPLE_AUTO) {
             telemetry.addLine("Simple auto only, exiting.");
@@ -202,20 +214,54 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
         telemetry.update();
 
-        robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
+        turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
         robot.STOP();
         Thread.sleep(10000);
 
-        moveStraight(1, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
+        robot.moveStraight(1, 3*Math.PI/2, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
         robot.STOP();
         Thread.sleep(1000);
 
-        robot.turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
-        robot.STOP();
+        turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
         Thread.sleep(1000);
 
-        conveyor.setPower(1.0);
+        //conveyor.setPower(1.0);
         robot.STOP();
-        Thread.sleep(1000);
+        Thread.sleep(1000);*/
+    }
+
+    public void run() {
+        frontLeft = hardwareMap.dcMotor.get("fl");
+        frontRight = hardwareMap.dcMotor.get("fr");
+        backLeft = hardwareMap.dcMotor.get("bl");
+        backRight = hardwareMap.dcMotor.get("br");
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        columnController = new ColumnController(hardwareMap);
+
+        jewel = (alliance == Alliance.BLUE) ? leftJewel : rightJewel;
+        jewelDetector = (alliance == Alliance.BLUE) ? leftJewelDetector : rightJewelDetector;
+
+        robot = new MecanumRobot(
+                frontLeft,
+                frontRight,
+                backLeft,
+                backRight,
+                imu,
+                this,
+                telemetry
+        );
+
+        telemetry.addLine("Ready");
+        telemetry.update();
+
+        waitForStart();
+
+        robot.moveStraight(1,  3*Math.PI/2, 2000, 30);
+
+        robot.turn(90f, 2000);
+
+        robot.moveStraight(1, Math.PI, 2000, 30);
+
+
     }
 }
