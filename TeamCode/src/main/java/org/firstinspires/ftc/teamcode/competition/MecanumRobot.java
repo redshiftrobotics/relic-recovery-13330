@@ -23,7 +23,7 @@ import org.redshiftrobotics.lib.pid.Vector2D;
 public class MecanumRobot {
 
     // Our motors. Assumes a four motor standard mecanum chassis.
-    public DcMotor frontLeft, frontRight, backLeft, backRight, encoderMotor;
+    private DcMotor frontLeft, frontRight, backLeft, backRight, encoderMotor;
 
 
    // CoordinatePIDController xyController;
@@ -42,6 +42,7 @@ public class MecanumRobot {
     Telemetry tm;
 
     static float ANGLE_THRESHOLD = 0.1f;
+    static float TARGET_ANGLE_INITIAL = 180f;
 
     /**
      * Our tuning constants for the mecanum chassis.
@@ -73,6 +74,7 @@ public class MecanumRobot {
         imuImpl = new IMUImpl(imu);
     //    xyController = new CoordinatePIDController(detector);
         imupidController = new IMUPIDController(imuImpl);
+        imupidController.setTarget(TARGET_ANGLE_INITIAL);
         this.context = context;
         this.tm = tm;
     }
@@ -118,9 +120,9 @@ public class MecanumRobot {
         }
     }*/
 
-   public void moveStraight(float speed, long timeout, double cmDistance) {
+  /* public void moveStraight(float speed, long timeout, double cmDistance) {
        moveStraight(speed, 3f/2f * Math.PI, timeout, cmDistance);
-   }
+   }*/
 
     /**
      * Moves a mecanum chassis straight at a specific angle for a specific distance in centimeters.
@@ -136,13 +138,18 @@ public class MecanumRobot {
 
     // 1.0, 3pi/2, 2000, 10
     public void moveStraight(float speed, double angle, long timeout, double cmDistance) {
+        if (speed < 0) {
+            speed *= -1;
+            angle += Math.PI;
+            angle %= Math.PI * 2;
+        }
+
         // Clear out all past PID data.
         imupidController.clearData();
 
         // These tunings have been established through our PID testing, and are good for
         // straight motion.
         imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
-        imupidController.setTarget(180);
 
         // Good to have a debug mode to enable/disable telemetry
         if (DEBUG) {
@@ -258,6 +265,7 @@ public class MecanumRobot {
     public void turn(double robotAngle, long timeout) {
         turn((float) robotAngle, timeout);
     }
+    public void turn(double robotAngle, long timeout, double powerConstant) { turn((float) robotAngle, timeout, powerConstant); }
 
     /**
      * Turns the robot to a specified angle heading using PID
@@ -268,8 +276,11 @@ public class MecanumRobot {
      * @param timeout similar to the straight function, this acts a fail safe, and prevents the robot
      *                from idling for too long if the angle tolerance is never quite reached.
      */
-
     public void turn(float robotAngle, long timeout) {
+        turn(robotAngle, timeout, 0.5);
+    }
+
+    public void turn(float robotAngle, long timeout, double powerConstant) {
         // Set tuning for turning
        imupidController.setTuning(P_TUNING_TURN, I_TUNING_TURN, D_TUNING_TURN);
 
@@ -322,7 +333,7 @@ public class MecanumRobot {
             // We don't need any x or y components of velocity (since we're not moving translationally,
             // just the angular correction +
             // our power constant of 0.5 to make the motors run at a reasonable speed.
-            applyMotorPower(0, 0, 0.5 + correctionAngular);
+            applyMotorPower(0, 0, powerConstant + correctionAngular);
             long currSysTime = System.currentTimeMillis();
             elapsedTime = currSysTime - startTime;
             loopTime = currSysTime - loopTime;
@@ -348,7 +359,7 @@ public class MecanumRobot {
      * @param velocityY the y (forward) component of chassis velocity.
      * @param correctionAngular the angular correction to be applied as calculated by PID.
      */
-        void applyMotorPower(double velocityX, double velocityY,  double correctionAngular) {
+        private void applyMotorPower(double velocityX, double velocityY,  double correctionAngular) {
 
             // Divide all corrections by 2000 to make sure we don't overflow. Not a good solution!!!
 
@@ -376,7 +387,7 @@ public class MecanumRobot {
         }
 
          // Simple helper method to improve readability.
-        public boolean withinThreshold(float value, float tolerance) {
+        private boolean withinThreshold(float value, float tolerance) {
             return Math.abs(value) <= tolerance;
         }
 

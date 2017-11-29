@@ -36,7 +36,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0.785 : 0.235; }
         public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.75 : 0.25; }
         public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 10 : -10; }
-        public double getDistanceToClearStone(StartPosition pos) { return 26.5; }
+        public double getDistanceToClearStone(StartPosition pos) { return 45.0;/*26.5;*/ }
         public double getAngleToAlignWithCryptobox(StartPosition pos) {
             if (pos == StartPosition.FRONT) {
                 if (this == BLUE) return -90;
@@ -47,12 +47,13 @@ abstract public class PulsarAuto extends LinearOpMode {
         }
 
         public double getDistanceToAlignWithColumn(StartPosition pos, RelicRecoveryVuMark column) {
+            column = RelicRecoveryVuMark.CENTER;
             if (this == BLUE) {
                 if (pos == StartPosition.FRONT) {
                     switch (column) {
-                        case LEFT: return 10;
-                        case CENTER: return 30;
-                        case RIGHT: return 50;
+                        case LEFT: return 2;
+                        case CENTER: return 10;
+                        case RIGHT: return 25;
                     }
                 } else {
                     switch (column) {
@@ -78,7 +79,7 @@ abstract public class PulsarAuto extends LinearOpMode {
             }
             return 0;
         }
-        public double getAngleToFaceCryptobox(StartPosition pos) { return this == BLUE ? -90 : 90; }
+        public double getAngleToFaceCryptobox(StartPosition pos) { return this == BLUE ? 90 : -90; }
     }
     protected enum StartPosition { BACK, FRONT }
 
@@ -115,13 +116,11 @@ abstract public class PulsarAuto extends LinearOpMode {
    // }
 
     void turn(double degrees, long timeout) {
-        robot.turn(degrees + 180, timeout);
+        robot.turn(degrees, timeout);
     }
 
     @Override
     public void runOpMode() throws InterruptedException {
-        run();
-        return; /*
         frontLeft = hardwareMap.dcMotor.get("fl");
         frontRight = hardwareMap.dcMotor.get("fr");
         backLeft = hardwareMap.dcMotor.get("bl");
@@ -155,37 +154,36 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         waitForStart();
 
-        TargetJewelPosition targetJewelPosition = TargetJewelPosition.BACK;
-*/
+        /*TargetJewelPosition targetJewelPosition = TargetJewelPosition.NONE;
 
-        /*jewel.setPosition(alliance.getJewelDownPosition(startPosition));
+      //  jewel.setPosition(alliance.getJewelDownPosition(startPosition));
 
         telemetry.addLine("Jewel Lowered");
         telemetry.update();
 
         Thread.sleep(1000);
 
-        TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+      //  TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
 
         telemetry.addData("saw jewel", targetJewelPosition.toString());
         if (targetJewelPosition == TargetJewelPosition.NONE) {
             telemetry.update();
             telemetry.addLine("Got None, moving");
-            jewel.setPosition(alliance.getJewelDownAltPosition(startPosition));
+           // jewel.setPosition(alliance.getJewelDownAltPosition(startPosition));
 
             telemetry.addLine("Jewel Lowered");
             telemetry.update();
 
             Thread.sleep(1000);
 
-            targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+           // targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
         }
         telemetry.update();
 
         Thread.sleep(1000);
-        */
 
-   /*     switch (targetJewelPosition) {
+
+        switch (targetJewelPosition) {
             case FRONT: break; // We do this later
             case BACK:
                 turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
@@ -197,9 +195,9 @@ abstract public class PulsarAuto extends LinearOpMode {
                 // Thread.sleep(1000);
                 break;
         }
-
+*/
         // for reference: robot.moveStraight(1,  3*Math.PI/2, 2000, 10);
-        robot.moveStraight(1, 3*Math.PI/2, 5000, alliance.getDistanceToClearStone(startPosition));
+        robot.moveStraight(1, Math.PI/2, 5000, alliance.getDistanceToClearStone(startPosition));
         Thread.sleep(1000);
 
         //jewel.setPosition(alliance.getJewelUpPosition(startPosition));
@@ -214,20 +212,28 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
         telemetry.update();
 
-        turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
-        robot.STOP();
-        Thread.sleep(10000);
-
-        robot.moveStraight(1, 3*Math.PI/2, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
+        robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000, 0.3);
         robot.STOP();
         Thread.sleep(1000);
 
-        turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
+        double distanceToAlignWithColumn = alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn());
+        double angle = Math.PI/2.0;
+        if (distanceToAlignWithColumn < 0) {
+            distanceToAlignWithColumn = Math.abs(distanceToAlignWithColumn);
+            angle = 3.0 * Math.PI / 2.0;
+        }
+        robot.moveStraight(0.3f, angle, 5000, distanceToAlignWithColumn);
+        robot.STOP();
         Thread.sleep(1000);
+
+        robot.turn(alliance.getAngleToFaceCryptobox(startPosition), 2000, 0.3);
+        Thread.sleep(1000);
+
+        robot.moveStraight(0.3f, Math.PI / 2.0, 5000, 15);
 
         //conveyor.setPower(1.0);
         robot.STOP();
-        Thread.sleep(1000);*/
+        Thread.sleep(1000);
     }
 
     public void run() {
@@ -260,7 +266,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         robot.turn(90f, 2000);
 
-        robot.moveStraight(1, Math.PI, 2000, 30);
+        robot.moveStraight(1, Math.PI/2, 2000, 30);
 
 
     }
