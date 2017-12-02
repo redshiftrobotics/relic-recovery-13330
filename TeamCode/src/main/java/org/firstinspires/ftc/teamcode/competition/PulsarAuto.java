@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.sun.tools.javac.jvm.Target;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
@@ -147,7 +148,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         //rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
 
         jewelServo = (alliance == Alliance.BLUE) ? hw.leftJewelServo : hw.rightJewelServo;
-        jewelDetector = (alliance == Alliance.BLUE) ? hw.leftJewelDetector : hw.rightJewelDetector;
+        //jewelDetector = (alliance == Alliance.BLUE) ? hw.leftJewelDetector : hw.rightJewelDetector;
 
         robot = new MecanumRobot(
                 hw.frontLeft,
@@ -172,7 +173,9 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         Thread.sleep(1000);
 
-        TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+        //TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+
+        TargetJewelPosition targetJewelPosition = TargetJewelPosition.BACK;
 
         telemetry.addData("saw jewelServo", targetJewelPosition.toString());
         if (targetJewelPosition == TargetJewelPosition.NONE) {
@@ -185,7 +188,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
             Thread.sleep(1000);
 
-            targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+            //targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
         }
         telemetry.update();
 

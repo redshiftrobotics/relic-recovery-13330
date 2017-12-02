@@ -38,21 +38,21 @@ public class TeleopNoPID extends OpMode{
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
-        frontLeft = hardwareMap.dcMotor.get("fl");
-        frontRight = hardwareMap.dcMotor.get("fr");
-        backLeft = hardwareMap.dcMotor.get("bl");
-        backRight = hardwareMap.dcMotor.get("br");
+        frontLeft = hardwareMap.dcMotor.get("frontLeft");
+        frontRight = hardwareMap.dcMotor.get("frontRight");
+        backLeft = hardwareMap.dcMotor.get("backLeft");
+        backRight = hardwareMap.dcMotor.get("backRight");
         //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         conveyor = hardwareMap.dcMotor.get("conveyor");
         conveyorLift = hardwareMap.servo.get("conveyorLift");
-        leftIntake = hardwareMap.dcMotor.get("leftIntake");
-        rightIntake = hardwareMap.dcMotor.get("rightIntake");
+        leftIntake = hardwareMap.dcMotor.get("collectorLeft");
+        rightIntake = hardwareMap.dcMotor.get("collectorRight");
         leftJewel = hardwareMap.servo.get("leftJewel");
         rightJewel = hardwareMap.servo.get("rightJewel");
 
-        collectorLeft = hardwareMap.servo.get("collectorLeft");
-        collectorRight = hardwareMap.servo.get("collectorRight");
+        collectorLeft = hardwareMap.servo.get("collectorServoLeft");
+        collectorRight = hardwareMap.servo.get("collectorServoRight");
 
         setServos();
 

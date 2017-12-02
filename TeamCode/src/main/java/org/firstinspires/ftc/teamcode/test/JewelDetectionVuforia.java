@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.test;
 import android.graphics.Bitmap;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.vuforia.CameraCalibration;
 import com.vuforia.Image;
@@ -35,6 +36,7 @@ import java.util.Arrays;
  * Created by Duncan on 10/11/2017.
  */
 @Autonomous(name="JewelDetectionVuforia")
+@Disabled
 public class JewelDetectionVuforia extends LinearOpMode{
 
     public final static Scalar blueLow = new Scalar(108,0,220);
