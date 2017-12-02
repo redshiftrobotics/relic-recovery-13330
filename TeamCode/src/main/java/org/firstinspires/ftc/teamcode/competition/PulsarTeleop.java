@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.util.Range;
 /**
  * Created by Duncan on 11/15/2017.
  */
-@TeleOp(name="Pulsar P Teleop", group="Pulsar")
-public class PulsarPTeleop extends OpMode{
+@TeleOp(name="Pulsar Teleop", group="Pulsar")
+public class PulsarTeleop extends OpMode{
 
     DcMotor frontLeft;
     DcMotor frontRight;

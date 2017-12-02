@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.competition;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,8 +11,9 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Duncan on 9/19/2017.
  */
 
-@TeleOp(name = "Pulsar Teleop")
-public class MecanumTeleop extends OpMode{
+@TeleOp(name = "Pulsar Teleop (No PID)")
+@Disabled
+public class TeleopNoPID extends OpMode{
     static double TICKS_PER_CM = 1/1440;
 
     DcMotor frontLeft;
