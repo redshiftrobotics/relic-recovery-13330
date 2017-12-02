@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.competition.PulsarAuto;
  * Created by ariporad on 2017-11-02.
  */
 
-@Autonomous(name="Jewel Test", group="test")
+@Autonomous(name="Jewel Test (Color Sensor)", group="test")
 public class JewelDetectorTest extends PulsarAuto {
     @Override
     protected Alliance getAlliance() {
@@ -27,7 +27,7 @@ public class JewelDetectorTest extends PulsarAuto {
         while (opModeIsActive()) {
             TargetJewelPosition targetJewelPosition = Alliance.BLUE.getTargetJewel(StartPosition.FRONT, jewelDetector);
 
-            telemetry.addData("saw jewel", targetJewelPosition.toString());
+            telemetry.addData("saw jewelServo", targetJewelPosition.toString());
             telemetry.update();
             idle();
         }

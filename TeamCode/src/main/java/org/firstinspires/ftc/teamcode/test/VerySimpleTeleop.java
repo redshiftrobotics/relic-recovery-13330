@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 
 @TeleOp(name = "Test TeleOp")
-public class TestTeleOpOpMode extends OpMode {
+public class VerySimpleTeleop extends OpMode {
     DcMotor m0;
     DcMotor m1;
     DcMotor m2;

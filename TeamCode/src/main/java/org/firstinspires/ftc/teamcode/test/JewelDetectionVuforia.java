@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import android.graphics.Bitmap;
 
@@ -34,8 +34,8 @@ import java.util.Arrays;
 /**
  * Created by Duncan on 10/11/2017.
  */
-@Autonomous(name="JewelDetection")
-public class JewelDetection extends LinearOpMode{
+@Autonomous(name="JewelDetectionVuforia")
+public class JewelDetectionVuforia extends LinearOpMode{
 
     public final static Scalar blueLow = new Scalar(108,0,220);
     public final static Scalar blueHigh = new Scalar(178,255,255);
