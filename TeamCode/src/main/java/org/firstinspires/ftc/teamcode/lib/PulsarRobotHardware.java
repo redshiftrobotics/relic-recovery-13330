@@ -32,7 +32,7 @@ public class PulsarRobotHardware {
 
     public final BNO055IMU imu;
 
-    PulsarRobotHardware(HardwareMap hardwareMap) {
+    public PulsarRobotHardware(HardwareMap hardwareMap) {
         frontLeft = hardwareMap.dcMotor.get("fl");
         frontRight = hardwareMap.dcMotor.get("fr");
         backLeft = hardwareMap.dcMotor.get("bl");

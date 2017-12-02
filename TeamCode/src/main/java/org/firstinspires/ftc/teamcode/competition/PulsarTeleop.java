@@ -8,30 +8,14 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
+
 /**
  * Created by Duncan on 11/15/2017.
  */
 @TeleOp(name="Pulsar Teleop", group="Pulsar")
 public class PulsarTeleop extends OpMode{
-
-    DcMotor frontLeft;
-    DcMotor frontRight;
-    DcMotor backLeft;
-    DcMotor backRight;
-
-    DcMotor conveyor;
-    Servo conveyorLift;
-
-    DcMotor leftIntake;
-    DcMotor rightIntake;
-
-    Servo leftJewel;
-    Servo rightJewel;
-
-    Servo collectorLeft;
-    Servo collectorRight;
-
-    BNO055IMU imu;
+    PulsarRobotHardware hw;
 
     double xPower = 0;
     double yPower = 0;
@@ -61,23 +45,9 @@ public class PulsarTeleop extends OpMode{
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
-        frontLeft = hardwareMap.dcMotor.get("fl");
-        frontRight = hardwareMap.dcMotor.get("fr");
-        backLeft = hardwareMap.dcMotor.get("bl");
-        backRight = hardwareMap.dcMotor.get("br");
-        //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        conveyor = hardwareMap.dcMotor.get("conveyor");
-        conveyorLift = hardwareMap.servo.get("conveyorLift");
-        leftIntake = hardwareMap.dcMotor.get("leftIntake");
-        rightIntake = hardwareMap.dcMotor.get("rightIntake");
-        leftJewel = hardwareMap.servo.get("leftJewel");
-        rightJewel = hardwareMap.servo.get("rightJewel");
+        hw = new PulsarRobotHardware(hardwareMap);
 
-        //collectorLeft = hardwareMap.servo.get("collectorLeft");
-        //collectorRight = hardwareMap.servo.get("collectorRight");
-
-        //setServos();
+        setServos();
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -86,22 +56,20 @@ public class PulsarTeleop extends OpMode{
         parameters.loggingEnabled      = true;
         parameters.loggingTag          = "IMU";
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-
-        imu.initialize(parameters);
+        hw.imu.initialize(parameters);
 
         telemetry.addLine("Ready for TeleOp!");
         telemetry.update();
     }
 
     private void setServos() {
-        leftJewel.setPosition(0.2);
-        rightJewel.setPosition(0.55);
+        hw.leftJewelServo.setPosition(0.2);
+        hw.rightJewelServo.setPosition(0.55);
 
-        collectorLeft.setPosition(0.38);
-        collectorRight.setPosition(0.66);
+        hw.collectorLeft.setPosition(0.38);
+        hw.collectorRight.setPosition(0.66);
 
-        conveyorLift.setPosition(0.28);
+        hw.conveyorLift.setPosition(0.28);
     }
 
     @Override
@@ -132,10 +100,10 @@ public class PulsarTeleop extends OpMode{
     }
 
     public void ControlRobot(){ //Function to control all hardware devices on the robot
-        frontLeft.setPower(flPower);
-        frontRight.setPower(frPower);
-        backLeft.setPower(blPower);
-        backRight.setPower(brPower);
+        hw.frontLeft.setPower(flPower);
+        hw.frontRight.setPower(frPower);
+        hw.backLeft.setPower(blPower);
+        hw.backRight.setPower(brPower);
     }
 
     public void UpdateTelemetry(){ //Function to telemetry out important values
@@ -155,7 +123,7 @@ public class PulsarTeleop extends OpMode{
 
     public void CalculateMovements(){ //Function to control the robot's movements, this includes calculating P and calculating the motor powers
         lastAngle = currentAngle;
-        currentAngle = imu.getAngularOrientation().firstAngle + 180f;
+        currentAngle = hw.imu.getAngularOrientation().firstAngle + 180f;
         if (anglePower != 0) isTurning = true;
         if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;
         if(isTurning){

@@ -135,6 +135,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        hw = new PulsarRobotHardware(hardwareMap);
         columnController = new ColumnController(hardwareMap);
         //leftJewel = hardwareMap.servo.get("leftJewel");
         //rightJewel = hardwareMap.servo.get("rightJewel");
