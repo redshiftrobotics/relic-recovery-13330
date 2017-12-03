@@ -14,8 +14,8 @@ import org.redshiftrobotics.lib.MecanumRobot;
 
 abstract public class PulsarAuto extends LinearOpMode {
     abstract protected Alliance getAlliance();
-
     abstract protected StartPosition getStartPosition();
+    protected boolean isSimpleAuto() { return false; }
 
     protected enum Alliance {
         BLUE, RED;
@@ -215,7 +215,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         //jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
         //Thread.sleep(1000);
 
-        if (PULSAR_SIMPLE_AUTO) {
+        if (isSimpleAuto()) {
             telemetry.addLine("Simple auto only, exiting.");
             telemetry.update();
             return;
