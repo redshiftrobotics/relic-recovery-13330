@@ -82,8 +82,9 @@ public class PulsarTeleop extends LinearOpMode{
     }
 
     private void setServos() {
-        hw.leftJewelServo.setPosition(0.2);
-        hw.rightJewelServo.setPosition(0.55);
+      //  hw.leftJewelServo.setPosition(0.2);
+      //  hw.rightJewelServo.setPosition(0.55);
+        hw.initializePositionsTeleop();
 
         hw.intakeServoRight.setDirection(Servo.Direction.REVERSE);
 /*
@@ -138,6 +139,12 @@ public class PulsarTeleop extends LinearOpMode{
         if (pad.y) {
             hw.intakeServoLeft.setPosition(INTAKE_UP_POSITION);
             hw.intakeServoRight.setPosition(INTAKE_UP_POSITION + 0.05);
+        }
+
+        if (pad.dpad_up) {
+            hw.conveyorLift.setPosition(0.45);
+        } else if (pad.dpad_down) {
+            hw.conveyorLift.setPosition(0.28);
         }
     }
 

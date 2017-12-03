@@ -160,6 +160,13 @@ abstract public class PulsarAuto extends LinearOpMode {
                 telemetry
         );
 
+
+        /**
+         * Initialization Values
+         */
+
+        hw.initializePositions();
+
         telemetry.addLine("Ready");
         telemetry.update();
 
