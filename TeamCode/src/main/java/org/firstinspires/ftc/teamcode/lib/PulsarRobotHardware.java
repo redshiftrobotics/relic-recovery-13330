@@ -52,4 +52,32 @@ public class PulsarRobotHardware {
         conveyor = hardwareMap.dcMotor.get("conveyor");
         conveyorLift = hardwareMap.servo.get("conveyorLift");
     }
+
+    public void initializePositions() {
+        intakeServoRight.setDirection(Servo.Direction.REVERSE);
+        leftJewelServo.setDirection(Servo.Direction.REVERSE);
+        rightJewelServo.setDirection(Servo.Direction.REVERSE);
+
+        intakeServoLeft.setPosition(0.8);
+        intakeServoRight.setPosition(0.85);
+
+        conveyorLift.setPosition(0.45);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        leftJewelServo.setPosition(0.3);
+        rightJewelServo.setPosition(0.9);
+    }
+
+    public void initializePositionsTeleop() {
+        intakeServoRight.setDirection(Servo.Direction.REVERSE);
+        leftJewelServo.setDirection(Servo.Direction.REVERSE);
+        rightJewelServo.setDirection(Servo.Direction.REVERSE);
+
+        leftJewelServo.setPosition(0.35);
+        rightJewelServo.setPosition(0.8);
+    }
 }
