@@ -24,14 +24,14 @@ abstract public class PulsarAuto extends LinearOpMode {
             int red = colorSensor.red();
             int blue = colorSensor.blue();
 
-            Alliance frontJewel;
+            Alliance backJewel;
 
-            if (red > 3 && red > blue) frontJewel = RED;
-            else if (blue > 3 && blue > red) frontJewel = BLUE;
+            if (red > blue) backJewel = RED;
+            else if (blue > red) backJewel = BLUE;
             else return TargetJewelPosition.NONE;
-
-            if (frontJewel == this) return TargetJewelPosition.BACK;
-            else return TargetJewelPosition.FRONT;
+            //old: back:front; new: front:back
+            if (backJewel == this) return TargetJewelPosition.FRONT;
+            else return TargetJewelPosition.BACK;
         }
 
         public double getJewelUpPosition(StartPosition pos) {
@@ -39,7 +39,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         }
 
         public double getJewelDownPosition(StartPosition pos) {
-            return this == BLUE ? 0.785 : 0.235;
+            return this == BLUE ? 0.800 : 0.200;
         }
 
         public double getJewelDownAltPosition(StartPosition pos) {
@@ -51,7 +51,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         }
 
         public double getDistanceToClearStone(StartPosition pos) {
-            return 45.0;/*26.5;*/
+            return 5.0;/*26.5;*/
         }
 
         public double getAngleToAlignWithCryptobox(StartPosition pos) {
@@ -137,18 +137,11 @@ abstract public class PulsarAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         hw = new PulsarRobotHardware(hardwareMap);
-        columnController = new ColumnController(hardwareMap);
-        //leftJewel = hardwareMap.servo.get("leftJewel");
-        //rightJewel = hardwareMap.servo.get("rightJewel");
-        //leftJewelDetector = hardwareMap.colorSensor.get("leftJewelDetector");
-        //rightJewelDetector = hardwareMap.colorSensor.get("rightJewelDetector");
-        //conveyor = hardwareMap.dcMotor.get("conveyor");
-
-        //leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
-        //rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
+        telemetry.addLine("Initializing For Auto!");
+        telemetry.update();
 
         jewelServo = (alliance == Alliance.BLUE) ? hw.leftJewelServo : hw.rightJewelServo;
-        //jewelDetector = (alliance == Alliance.BLUE) ? hw.leftJewelDetector : hw.rightJewelDetector;
+        jewelDetector = (alliance == Alliance.BLUE) ? hw.leftJewelDetector : hw.rightJewelDetector;
 
         robot = new MecanumRobot(
                 hw.frontLeft,
@@ -165,7 +158,7 @@ abstract public class PulsarAuto extends LinearOpMode {
          * Initialization Values
          */
 
-        hw.initializePositions();
+        hw.initializePositions(telemetry);
 
         telemetry.addLine("Ready");
         telemetry.update();
@@ -180,10 +173,12 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         Thread.sleep(1000);
 
-        //TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+        TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
 
-        TargetJewelPosition targetJewelPosition = TargetJewelPosition.BACK;
 
+        telemetry.addData("r", jewelDetector.red());
+        telemetry.addData("g", jewelDetector.green());
+        telemetry.addData("b", jewelDetector.blue());
         telemetry.addData("saw jewelServo", targetJewelPosition.toString());
         if (targetJewelPosition == TargetJewelPosition.NONE) {
             telemetry.update();
@@ -195,7 +190,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
             Thread.sleep(1000);
 
-            //targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+            targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
         }
         telemetry.update();
 
@@ -206,27 +201,40 @@ abstract public class PulsarAuto extends LinearOpMode {
                 break; // We do this later
             case BACK:
                 robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
-                //jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
+                hw.leftJewelServo.setPosition(0.3);
+                hw.rightJewelServo.setPosition(0.9);
                 robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
                 break;
             case NONE:
-                // jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
+                 jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
                 // Thread.sleep(1000);
                 break;
         }
 
-        // for reference: robot.moveStraight(1,  3*Math.PI/2, 2000, 10);
-        robot.moveStraight(1, Math.PI / 2, 5000, alliance.getDistanceToClearStone(startPosition));
-        Thread.sleep(1000);
-
-        //jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
-        //Thread.sleep(1000);
 
         if (isSimpleAuto()) {
+            double angle = 3 * Math.PI / 2;
+            if ((alliance == Alliance.RED && startPosition == StartPosition.FRONT) || (alliance == Alliance.BLUE && startPosition == StartPosition.BACK)) {
+                robot.turn(Math.PI / 5, 1600);
+            } else {
+                robot.turn(-Math.PI / 5, 1600);
+            }
+            robot.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
+            Thread.sleep(1000);
+
+            hw.leftJewelServo.setPosition(0.3);
+            hw.rightJewelServo.setPosition(0.9);
+            //Thread.sleep(1000);
             telemetry.addLine("Simple auto only, exiting.");
             telemetry.update();
             return;
         }
+
+        robot.moveStraight(1, 3 * Math.PI / 2, 5000, alliance.getDistanceToClearStone(startPosition));
+        Thread.sleep(1000);
+
+        jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
+        //Thread.sleep(1000);
 
         telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
         telemetry.update();

@@ -18,10 +18,10 @@ import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 public class PulsarTeleop extends LinearOpMode{
     PulsarRobotHardware hw;
 
-    static final double CONVEYOR_BELT_POWER_SCALAR = 1;
+    static final double CONVEYOR_BELT_POWER_SCALAR = 0.85;
     static final double DEFAULT_CONVEYOR_SPEED = 0.5;
 
-    static final double INTAKE_POWER_SCALAR = 1;
+    static final double INTAKE_POWER_SCALAR = 0.5;
     static final double DEFAULT_INTAKE_SPEED = -0.5;
 
     static final double INTAKE_UP_POSITION = 0.60;
@@ -101,20 +101,20 @@ public class PulsarTeleop extends LinearOpMode{
         CalculateMovements();
         ControlRobot();
         ControlConveyor(gamepad2);
-        //StoreRotation(gamepad2);
+        StoreRotation(gamepad2);
         UpdateTelemetry();
         idle();
     }
 
     public void StoreRotation(Gamepad pad) { //Function that updates the stored rotation, can be customized to use a specific controller
-        if (pad.back) cryptoboxAngle = currentAngle;
-        if (pad.b) targetAngle = cryptoboxAngle;
+        if (pad.b) cryptoboxAngle = currentAngle;
+        if (pad.x) targetAngle = cryptoboxAngle;
     }
 
     public void UpdateMovements(Gamepad pad){ //Function that updates the movement constants, can be customized to use a specific controller
         xPower = pad.right_stick_x;
-        yPower = pad.right_stick_y;
-        anglePower = pad.left_stick_x;
+        yPower = -pad.right_stick_y;
+        anglePower = -pad.left_stick_x;
     }
 
     public void UpdatePConstants(Gamepad pad){ //Function that updates the P constants, can be customized to use a specific controller
@@ -125,20 +125,29 @@ public class PulsarTeleop extends LinearOpMode{
 
     private void ControlConveyor(Gamepad pad) {
         hw.leftIntake.setDirection(pad.left_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        hw.rightIntake.setDirection(pad.left_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        hw.conveyor.setDirection(pad.right_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        hw.conveyor.setPower(pad.left_trigger * CONVEYOR_BELT_POWER_SCALAR);
-        hw.leftIntake.setPower(pad.right_trigger * INTAKE_POWER_SCALAR);
-        hw.rightIntake.setPower(pad.right_trigger * INTAKE_POWER_SCALAR);
+        hw.rightIntake.setDirection(pad.right_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
+        double scalar = INTAKE_POWER_SCALAR;
+        if (pad.right_bumper) { scalar *= 0.5; }
+        if (gamepad1.back) { scalar = 1; }
+        hw.leftIntake.setPower(pad.left_trigger * (scalar));
+        hw.rightIntake.setPower(pad.right_trigger * (scalar));
+
+        // ----
+        if (gamepad1.back) {
+            hw.conveyor.setPower(pad.left_stick_y);
+        } else {
+            hw.conveyor.setPower(pad.left_stick_y * CONVEYOR_BELT_POWER_SCALAR);
+        }
+
 
         // Up/Down
         if (pad.a) {
             hw.intakeServoLeft.setPosition(INTAKE_DOWN_POSITION);
-            hw.intakeServoRight.setPosition(INTAKE_DOWN_POSITION + 0.05);
+            hw.intakeServoRight.setPosition(INTAKE_DOWN_POSITION);
         }
         if (pad.y) {
             hw.intakeServoLeft.setPosition(INTAKE_UP_POSITION);
-            hw.intakeServoRight.setPosition(INTAKE_UP_POSITION + 0.05);
+            hw.intakeServoRight.setPosition(INTAKE_UP_POSITION);
         }
 
         if (pad.dpad_up) {

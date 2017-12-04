@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.lib;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by ariporad on 2017-12-02.
@@ -18,8 +21,8 @@ public class PulsarRobotHardware {
     public final Servo leftJewelServo;
     public final Servo rightJewelServo;
 
-    //public final ColorSensor leftJewelDetector;
-    //public final ColorSensor rightJewelDetector;
+    public final ColorSensor leftJewelDetector;
+    public final ColorSensor rightJewelDetector;
 
     public final DcMotor conveyor;
     public final Servo conveyorLift;
@@ -41,8 +44,9 @@ public class PulsarRobotHardware {
 
         leftJewelServo = hardwareMap.servo.get("leftJewel");
         rightJewelServo = hardwareMap.servo.get("rightJewel");
-        //leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
+        leftJewelDetector = hardwareMap.colorSensor.get("color_sensor");
         //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
+        rightJewelDetector = leftJewelDetector;
 
         leftIntake = hardwareMap.dcMotor.get("collectorLeft");
         rightIntake = hardwareMap.dcMotor.get("collectorRight");
@@ -53,7 +57,7 @@ public class PulsarRobotHardware {
         conveyorLift = hardwareMap.servo.get("conveyorLift");
     }
 
-    public void initializePositions() {
+    public void initializePositions(Telemetry tm) {
         intakeServoRight.setDirection(Servo.Direction.REVERSE);
         leftJewelServo.setDirection(Servo.Direction.REVERSE);
         rightJewelServo.setDirection(Servo.Direction.REVERSE);
@@ -62,14 +66,11 @@ public class PulsarRobotHardware {
         intakeServoRight.setPosition(0.85);
 
         conveyorLift.setPosition(0.45);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         leftJewelServo.setPosition(0.3);
         rightJewelServo.setPosition(0.9);
+        tm.addLine("Servo Positions: initialized");
+        tm.update();
     }
 
     public void initializePositionsTeleop() {

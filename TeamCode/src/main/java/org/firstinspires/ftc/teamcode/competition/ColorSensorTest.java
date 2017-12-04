@@ -14,7 +14,7 @@ public class ColorSensorTest extends OpMode {
 
     @Override
     public void init() {
-        cs = hardwareMap.colorSensor.get("cs");
+        cs = hardwareMap.colorSensor.get("color_sensor");
     }
 
     @Override
