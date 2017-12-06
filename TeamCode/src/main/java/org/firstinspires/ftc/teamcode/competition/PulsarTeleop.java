@@ -50,9 +50,6 @@ public class PulsarTeleop extends LinearOpMode{
     boolean lastRB = false;
     boolean lastLB = false;
 
-    boolean intakeManualControl = true;
-    boolean conveyorManualControl = true;
-
     @Override
     public void runOpMode() throws InterruptedException {
         init_();
@@ -64,7 +61,7 @@ public class PulsarTeleop extends LinearOpMode{
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
-        hw = new PulsarRobotHardware(hardwareMap);
+        hw = new PulsarRobotHardware(hardwareMap, null);
 
         setServos();
 
