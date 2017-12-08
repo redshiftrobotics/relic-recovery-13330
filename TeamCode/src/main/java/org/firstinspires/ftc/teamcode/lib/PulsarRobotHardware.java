@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.lib;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -32,9 +32,9 @@ public class PulsarRobotHardware {
     public final ColorSensor rightJewelDetector;
     public final ColorSensor jewelDetector;
 
-    public final OpticalDistanceSensor leftODS;
-    public final OpticalDistanceSensor rightODS;
-    public final OpticalDistanceSensor ods;
+    public final DistanceSensor leftODS;
+    public final DistanceSensor rightODS;
+    public final DistanceSensor ods;
 
     public final DcMotor conveyor;
     public final Servo conveyorLift;
@@ -64,8 +64,8 @@ public class PulsarRobotHardware {
         rightJewelDetector = leftJewelDetector;
         jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
-        leftODS = hardwareMap.opticalDistanceSensor.get("leftODS");
-        rightODS = hardwareMap.opticalDistanceSensor.get("rightODS");
+        leftODS = hardwareMap.get(DistanceSensor.class, "leftODS");
+        rightODS = hardwareMap.get(DistanceSensor.class, "rightODS");
         ods = alliance == PulsarAuto.Alliance.BLUE ? leftODS : rightODS;
 
         conveyor = hardwareMap.dcMotor.get("conveyor");

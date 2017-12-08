@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.lib.EncoderDistanceConverter;
 import org.redshiftrobotics.lib.pid.IMUImpl;
 import org.redshiftrobotics.lib.pid.IMUPIDController;
@@ -221,8 +222,8 @@ public class MecanumRobot {
 
         int initialEncoderRotation = encoderMotor.getCurrentPosition();
         if (DEBUG) {
-            tm.addData("Encoder Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
-            tm.addData("Encoder Target Distance: ", encoderDistance);
+            tm.addData("ODS Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
+            tm.addData("ODS Target Distance: ", encoderDistance);
             tm.update();
             try {
                 Thread.sleep(1000);
@@ -298,7 +299,7 @@ public class MecanumRobot {
         // Check for speed overflow (motors can only be set between 1 and -1)
         speed = Range.clip(Math.abs(speed), 0, 1);
 
-        cmDistance = Math.abs(cmDistance);
+        cmDistance = Range.clip(Math.abs(cmDistance), 0, 6);
 
         // We will represent velocity as a vector.
         Vector2D velocity = new Vector2D(0, 0);
@@ -319,7 +320,6 @@ public class MecanumRobot {
 
 
 
-        int encoderDistance = EncoderDistanceConverter.cmToEncoder(cmDistance);
         // This EncoderDistanceConverter class contains all the conversion factors we need to switch between
         // encoders and cm.
 
@@ -345,10 +345,9 @@ public class MecanumRobot {
 
         */
 
-        int initialEncoderRotation = encoderMotor.getCurrentPosition();
         if (DEBUG) {
-            tm.addData("Encoder Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
-            tm.addData("Encoder Target Distance: ", encoderDistance);
+            tm.addData("ODS Distance:", hw.ods.getDistance(DistanceUnit.CM));
+            tm.addData("ODS Target Distance:", cmDistance);
             tm.update();
             try {
                 Thread.sleep(1000);
@@ -368,17 +367,10 @@ public class MecanumRobot {
         // We need to account for elapsed time, potential stop conditions from the opmode container,
         // and changes in encoder position.
 
-        while (elapsedTime <= timeout && context.opModeIsActive() && Math.abs(initialEncoderRotation - encoderMotor.getCurrentPosition()) <= encoderDistance) {
+        while (elapsedTime <= timeout && context.opModeIsActive() && hw.ods.getDistance(DistanceUnit.CM) >= cmDistance) {
+            if (hw.ods.getDistance(DistanceUnit.CM) == 0) throw new IllegalStateException("Bad ODS Values");
          /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
-
-            if (DEBUG) {
-                // tm.addData("P: " + imupidController.P + "I: " + imupidController.I + "D: " + imupidController.D, "");
-                // tm.update();
-                tm.addData(" Front Left Position: ", encoderMotor.getCurrentPosition());
-                tm.addData("Target Position: ", encoderDistance);
-                tm.update();
-            }
 
             applyMotorPower(velocityXComponent, velocityYComponent, correctionAngular);
 

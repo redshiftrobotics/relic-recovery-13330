@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.competition;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
@@ -45,7 +44,7 @@ abstract public class PulsarAuto extends LinearOpMode {
             return this == BLUE ? 0.75 : 0.25;
         }
 
-        protected double getFrontJewelKnockOffAngle(StartPosition pos) {
+        protected double getJewelKnockOffAngle(StartPosition pos) {
             return this == BLUE ? 10 : -10;
         }
 
@@ -182,19 +181,23 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         switch (targetJewelPosition) {
             case FRONT:
-                break; // We do this later
-            case BACK:
-                robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                robot.turn(-alliance.getJewelKnockOffAngle(startPosition), 2000);
                 hw.leftJewelServo.setPosition(0.3);
                 hw.rightJewelServo.setPosition(0.9);
-                robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+                robot.turn(alliance.getJewelKnockOffAngle(startPosition), 2000);
+                break;
+            case BACK:
+                robot.turn(alliance.getJewelKnockOffAngle(startPosition), 2000);
+                hw.leftJewelServo.setPosition(0.3);
+                hw.rightJewelServo.setPosition(0.9);
+                robot.turn(-alliance.getJewelKnockOffAngle(startPosition), 2000);
                 break;
             case NONE:
-                 hw.jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
                 // Thread.sleep(1000);
                 break;
         }
 
+        hw.jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
 
         if (isSimpleAuto()) {
             double angle = 3 * Math.PI / 2;
@@ -209,6 +212,7 @@ abstract public class PulsarAuto extends LinearOpMode {
             hw.leftJewelServo.setPosition(0.3);
             hw.rightJewelServo.setPosition(0.9);
             //Thread.sleep(1000);
+
             telemetry.addLine("Simple auto only, exiting.");
             telemetry.update();
             return;
@@ -217,13 +221,11 @@ abstract public class PulsarAuto extends LinearOpMode {
         robot.moveStraight(1, 3 * Math.PI / 2, 5000, alliance.getDistanceToClearStone(startPosition));
         Thread.sleep(1000);
 
-        hw.jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
-        //Thread.sleep(1000);
+        moveForwardOneCryptoboxColumn();
+        moveForwardOneCryptoboxColumn();
 
-        telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
-        telemetry.update();
 
-        robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000, 0.3);
+        /*robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000, 0.3);
         robot.STOP();
         Thread.sleep(1000);
 
@@ -244,6 +246,20 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         //conveyor.setPower(1.0);
         robot.STOP();
+        Thread.sleep(1000);*/
+    }
+
+    private void moveForwardOneCryptoboxColumn() throws InterruptedException {
+        hw.jewelServo.setPosition(alliance.getJewelDownAltPosition(startPosition));
+        Thread.sleep(1000);
+
+        robot.moveTillOpticalDistanceSensor(1, 3 * Math.PI / 2, 5000, 2);
+        Thread.sleep(1000);
+
+        hw.jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));
+        Thread.sleep(1000);
+
+        robot.moveStraight(0.5f, 3 * Math.PI / 2, 5000, 15);
         Thread.sleep(1000);
     }
 }
