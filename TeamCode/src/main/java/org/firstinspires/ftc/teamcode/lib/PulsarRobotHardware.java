@@ -25,7 +25,8 @@ public class PulsarRobotHardware {
     public final ColorSensor rightJewelDetector;
 
     public final DcMotor conveyor;
-    public final Servo conveyorLift;
+    public final Servo conveyorLiftLeft;
+    public final Servo conveyorLiftRight;
 
     public final Servo intakeServoLeft;
     public final Servo intakeServoRight;
@@ -54,7 +55,8 @@ public class PulsarRobotHardware {
         intakeServoRight = hardwareMap.servo.get("collectorServoRight");
 
         conveyor = hardwareMap.dcMotor.get("conveyor");
-        conveyorLift = hardwareMap.servo.get("conveyorLift");
+        conveyorLiftLeft = hardwareMap.servo.get("conveyorLiftLeft");
+        conveyorLiftRight = hardwareMap.servo.get("conveyorLiftRight");
     }
 
     public void initializePositions(Telemetry tm) {
@@ -65,7 +67,8 @@ public class PulsarRobotHardware {
         intakeServoLeft.setPosition(0.8);
         intakeServoRight.setPosition(0.85);
 
-        conveyorLift.setPosition(0.45);
+        conveyorLiftLeft.setPosition(0.45);
+        conveyorLiftRight.setPosition(0.45);
 
         leftJewelServo.setPosition(0.3);
         rightJewelServo.setPosition(0.9);

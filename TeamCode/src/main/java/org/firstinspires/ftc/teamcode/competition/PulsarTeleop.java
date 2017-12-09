@@ -92,7 +92,8 @@ public class PulsarTeleop extends LinearOpMode{
         hw.intakeServoRight.setPosition(0.66);
 
 */
-        hw.conveyorLift.setPosition(0.28);
+        hw.conveyorLiftLeft.setPosition(0.28);
+        hw.conveyorLiftRight.setPosition(0.28);
     }
 
     public void loop_() {
@@ -151,9 +152,11 @@ public class PulsarTeleop extends LinearOpMode{
         }
 
         if (pad.dpad_up) {
-            hw.conveyorLift.setPosition(0.45);
+            hw.conveyorLiftLeft.setPosition(0.45);
+            hw.conveyorLiftRight.setPosition(0.45);
         } else if (pad.dpad_down) {
-            hw.conveyorLift.setPosition(0.28);
+            hw.conveyorLiftLeft.setPosition(0.28);
+            hw.conveyorLiftRight.setPosition(0.28);
         }
     }
 
