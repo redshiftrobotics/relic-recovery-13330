@@ -45,9 +45,8 @@ public class PulsarRobotHardware {
 
         leftJewelServo = hardwareMap.servo.get("leftJewel");
         rightJewelServo = hardwareMap.servo.get("rightJewel");
-        leftJewelDetector = hardwareMap.colorSensor.get("color_sensor");
-        //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
-        rightJewelDetector = leftJewelDetector;
+        leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
+        rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
 
         leftIntake = hardwareMap.dcMotor.get("collectorLeft");
         rightIntake = hardwareMap.dcMotor.get("collectorRight");
