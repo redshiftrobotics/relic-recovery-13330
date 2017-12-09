@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 public class CollectorTestOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        PulsarRobotHardware r = new PulsarRobotHardware(hardwareMap);
+        PulsarRobotHardware r = new PulsarRobotHardware(hardwareMap, null);
         waitForStart();
         while (opModeIsActive()) {
             r.intakeServoLeft.setPosition(1);
