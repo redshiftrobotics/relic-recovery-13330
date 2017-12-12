@@ -32,9 +32,9 @@ public class PulsarRobotHardware {
     public final ColorSensor rightJewelDetector;
     public final ColorSensor jewelDetector;
 
-    public final DistanceSensor leftODS;
-    public final DistanceSensor rightODS;
-    public final DistanceSensor ods;
+    //public final DistanceSensor leftODS;
+    //public final DistanceSensor rightODS;
+    //public final DistanceSensor ods;
 
     public final DcMotor conveyor;
     public final Servo conveyorLiftLeft;
@@ -60,12 +60,13 @@ public class PulsarRobotHardware {
         rightJewelServo = hardwareMap.servo.get("rightJewel");
         jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
         leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
-        rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
+        rightJewelDetector = leftJewelDetector;
+        //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
         jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
-        leftODS = hardwareMap.get(DistanceSensor.class, "leftODS");
-        rightODS = hardwareMap.get(DistanceSensor.class, "rightODS");
-        ods = alliance == PulsarAuto.Alliance.BLUE ? leftODS : rightODS;
+        //leftODS = hardwareMap.get(DistanceSensor.class, "leftODS");
+        //rightODS = hardwareMap.get(DistanceSensor.class, "rightODS");
+        //ods = alliance == PulsarAuto.Alliance.BLUE ? leftODS : rightODS;
 
         conveyor = hardwareMap.dcMotor.get("conveyor");
         conveyorLiftLeft = hardwareMap.servo.get("conveyorLiftLeft");

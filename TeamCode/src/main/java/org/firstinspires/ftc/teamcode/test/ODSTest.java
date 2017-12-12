@@ -23,7 +23,7 @@ public class ODSTest extends OpMode {
     @Override
     public void loop() {
         telemetry.addLine("ODS Tester");
-        telemetry.addData("distance (cm)", hw.ods.getDistance(DistanceUnit.CM));
+        //telemetry.addData("distance (cm)", hw.ods.getDistance(DistanceUnit.CM));
         telemetry.update();
     }
 }

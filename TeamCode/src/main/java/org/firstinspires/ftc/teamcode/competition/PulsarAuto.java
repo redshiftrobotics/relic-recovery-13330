@@ -253,7 +253,8 @@ abstract public class PulsarAuto extends LinearOpMode {
         hw.jewelServo.setPosition(alliance.getJewelDownAltPosition(startPosition));
         Thread.sleep(1000);
 
-        robot.moveTillOpticalDistanceSensor(1, 3 * Math.PI / 2, 5000, 2);
+        //robot.moveTillOpticalDistanceSensor(1, 3 * Math.PI / 2, 5000, 2);
+        robot.moveStraightMillis(1,3 * Math.PI / 2, 1000);
         Thread.sleep(1000);
 
         hw.jewelServo.setPosition(alliance.getJewelUpPosition(startPosition));

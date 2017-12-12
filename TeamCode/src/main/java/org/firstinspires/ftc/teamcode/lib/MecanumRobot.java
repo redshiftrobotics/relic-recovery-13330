@@ -27,6 +27,7 @@ public class MecanumRobot {
     private DcMotor encoderMotor;
     private PulsarRobotHardware hw;
 
+    long TWEEN_ACCEL_TIME = 700;
 
    // CoordinatePIDController xyController;
 
@@ -265,122 +266,122 @@ public class MecanumRobot {
         STOP();
     }
 
-    // 1.0, 3pi/2, 2000, 10
-    public void moveTillOpticalDistanceSensor(float speed, double angle, long timeout, double cmDistance) {
-        if (speed < 0) {
-            speed *= -1;
-            angle += Math.PI;
-            angle %= Math.PI * 2;
-        }
+    //// 1.0, 3pi/2, 2000, 10
+    //public void moveTillOpticalDistanceSensor(float speed, double angle, long timeout, double cmDistance) {
+    //    if (speed < 0) {
+    //        speed *= -1;
+    //        angle += Math.PI;
+    //        angle %= Math.PI * 2;
+    //    }
 
-        // Clear out all past PID data.
-        imupidController.clearData();
+    //    // Clear out all past PID data.
+    //    imupidController.clearData();
 
-        // These tunings have been established through our PID testing, and are good for
-        // straight motion.
-        imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
+    //    // These tunings have been established through our PID testing, and are good for
+    //    // straight motion.
+    //    imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
 
-        // Good to have a debug mode to enable/disable telemetry
-        if (DEBUG) {
-            tm.addData("P: " + imupidController.P, "");
-            tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
-            tm.addData("speed", speed);
-            tm.addData("angle", angle);
-            tm.addData("timeout", timeout);
-            tm.addData("cmDistance", cmDistance);
-            tm.update();
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    //    // Good to have a debug mode to enable/disable telemetry
+    //    if (DEBUG) {
+    //        tm.addData("P: " + imupidController.P, "");
+    //        tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
+    //        tm.addData("speed", speed);
+    //        tm.addData("angle", angle);
+    //        tm.addData("timeout", timeout);
+    //        tm.addData("cmDistance", cmDistance);
+    //        tm.update();
+    //        try {
+    //            Thread.sleep(2000);
+    //        } catch (InterruptedException e) {
+    //            e.printStackTrace();
+    //        }
+    //    }
 
-        // Check for speed overflow (motors can only be set between 1 and -1)
-        speed = Range.clip(Math.abs(speed), 0, 1);
+    //    // Check for speed overflow (motors can only be set between 1 and -1)
+    //    speed = Range.clip(Math.abs(speed), 0, 1);
 
-        cmDistance = Range.clip(Math.abs(cmDistance), 0, 6);
+    //    cmDistance = Range.clip(Math.abs(cmDistance), 0, 6);
 
-        // We will represent velocity as a vector.
-        Vector2D velocity = new Vector2D(0, 0);
+    //    // We will represent velocity as a vector.
+    //    Vector2D velocity = new Vector2D(0, 0);
 
-        // The vectory class requires that we ADD polar coordinates to a vector -- does
-        // not allow polar coordinate initialization.
-        velocity.SetPolar(speed, angle);
+    //    // The vectory class requires that we ADD polar coordinates to a vector -- does
+    //    // not allow polar coordinate initialization.
+    //    velocity.SetPolar(speed, angle);
 
-        // Split vector into x velocity and y velocity to move at the specified angle.
-        double velocityXComponent = velocity.GetXComponent();
-        double velocityYComponent = velocity.GetYComponent();
+    //    // Split vector into x velocity and y velocity to move at the specified angle.
+    //    double velocityXComponent = velocity.GetXComponent();
+    //    double velocityYComponent = velocity.GetYComponent();
 
-        if (DEBUG) {
-            tm.addData("Velocity Y Component: ", velocityYComponent);
-            tm.update();
-        }
-
-
+    //    if (DEBUG) {
+    //        tm.addData("Velocity Y Component: ", velocityYComponent);
+    //        tm.update();
+    //    }
 
 
-        // This EncoderDistanceConverter class contains all the conversion factors we need to switch between
-        // encoders and cm.
-
-      /*  int encoderDistance = EncoderDistanceConverter.cmToEncoder(cmDistance);
-
-        // figure out whether to add or subtract encoder rotations based on the direction we're moving
-        float encoderDirectionSign = Math.signum((float)velocityYComponent);
 
 
-        // Use front motor for encoder counting (this can easily be changed). Some motors
-        // may be wired such that the encoders count down. To reduce that pain in the ass, use
-        // encoders on a different motor. It really doesn't matter, there are minimal differences between
-        // encoders on different motors.
-        //
+    //    // This EncoderDistanceConverter class contains all the conversion factors we need to switch between
+    //    // encoders and cm.
 
-        //float currentEncoderRotation = frontLeft.getCurrentPosition();
-        // current: -1000 //want to move: 1000 at Math.pi/2
-        float initialEncoderRotation = frontLeft.getCurrentPosition();
+    //  /*  int encoderDistance = EncoderDistanceConverter.cmToEncoder(cmDistance);
 
-        // We might not start at position 0...
-        float targetEncoderRotation = initialEncoderRotation + encoderDirectionSign * encoderDistance;
-        //-1000 + 1000 = 0
-
-        */
-
-        if (DEBUG) {
-            tm.addData("ODS Distance:", hw.ods.getDistance(DistanceUnit.CM));
-            tm.addData("ODS Target Distance:", cmDistance);
-            tm.update();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Timekeeping variables...
-        long elapsedTime = 0;
-        long startTime = System.currentTimeMillis();
-
-        // loopTime = time between each loop iteration
-        long loopTime = System.currentTimeMillis();
+    //    // figure out whether to add or subtract encoder rotations based on the direction we're moving
+    //    float encoderDirectionSign = Math.signum((float)velocityYComponent);
 
 
-        // We need to account for elapsed time, potential stop conditions from the opmode container,
-        // and changes in encoder position.
+    //    // Use front motor for encoder counting (this can easily be changed). Some motors
+    //    // may be wired such that the encoders count down. To reduce that pain in the ass, use
+    //    // encoders on a different motor. It really doesn't matter, there are minimal differences between
+    //    // encoders on different motors.
+    //    //
 
-        while (elapsedTime <= timeout && context.opModeIsActive() && hw.ods.getDistance(DistanceUnit.CM) >= cmDistance) {
-            if (hw.ods.getDistance(DistanceUnit.CM) == 0) throw new IllegalStateException("Bad ODS Values");
-         /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
-            double correctionAngular = imupidController.calculatePID(loopTime/1000);
+    //    //float currentEncoderRotation = frontLeft.getCurrentPosition();
+    //    // current: -1000 //want to move: 1000 at Math.pi/2
+    //    float initialEncoderRotation = frontLeft.getCurrentPosition();
 
-            applyMotorPower(velocityXComponent, velocityYComponent, correctionAngular);
+    //    // We might not start at position 0...
+    //    float targetEncoderRotation = initialEncoderRotation + encoderDirectionSign * encoderDistance;
+    //    //-1000 + 1000 = 0
 
-            // Update time...
-            long currSysTime = System.currentTimeMillis();
-            elapsedTime = currSysTime - startTime;
-            loopTime = currSysTime - loopTime;
-        }
-        STOP();
-    }
+    //    */
+
+    //    if (DEBUG) {
+    //        tm.addData("ODS Distance:", hw.ods.getDistance(DistanceUnit.CM));
+    //        tm.addData("ODS Target Distance:", cmDistance);
+    //        tm.update();
+    //        try {
+    //            Thread.sleep(1000);
+    //        } catch (InterruptedException e) {
+    //            e.printStackTrace();
+    //        }
+    //    }
+
+    //    // Timekeeping variables...
+    //    long elapsedTime = 0;
+    //    long startTime = System.currentTimeMillis();
+
+    //    // loopTime = time between each loop iteration
+    //    long loopTime = System.currentTimeMillis();
+
+
+    //    // We need to account for elapsed time, potential stop conditions from the opmode container,
+    //    // and changes in encoder position.
+
+    //    while (elapsedTime <= timeout && context.opModeIsActive() && hw.ods.getDistance(DistanceUnit.CM) >= cmDistance) {
+    //        if (hw.ods.getDistance(DistanceUnit.CM) == 0) throw new IllegalStateException("Bad ODS Values");
+    //     /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
+    //        double correctionAngular = imupidController.calculatePID(loopTime/1000);
+
+    //        applyMotorPower(velocityXComponent, velocityYComponent, correctionAngular);
+
+//            // Update time...
+//            long currSysTime = System.currentTimeMillis();
+//            elapsedTime = currSysTime - startTime;
+//            loopTime = currSysTime - loopTime;
+//        }
+//        STOP();
+//    }
     /**
      * Turns the robot to a specified angle heading using PID
      * @param robotAngle the angle to which the robot should turn, with the robot's current position
@@ -467,6 +468,90 @@ public class MecanumRobot {
     public void turn(double robotAngle, long timeout, double powerConstant) { turn((float) robotAngle, timeout, powerConstant); }
 
 
+    public void moveStraightMillis(float speed, double angle, long timeout) {
+        if (speed < 0) {
+            speed *= -1;
+            angle += Math.PI;
+            angle %= Math.PI * 2;
+        }
+
+        // Clear out all past PID data.
+        imupidController.clearData();
+
+        // These tunings have been established through our PID testing, and are good for
+        // straight motion.
+        imupidController.setTuning(P_TUNING_STRAIGHT, I_TUNING_STRAIGHT, D_TUNING_STRAIGHT);
+
+        // Good to have a debug mode to enable/disable telemetry
+        if (DEBUG) {
+            tm.addData("P: " + imupidController.P, "");
+            tm.addData("I: " + imupidController.I + "\n D: " + imupidController.D, "");
+            tm.addData("speed", speed);
+            tm.addData("angle", angle);
+            tm.addData("timeout", timeout);
+            tm.update();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Check for speed overflow (motors can only be set between 1 and -1)
+        speed = Range.clip(Math.abs(speed), 0, 1);
+
+        // We will represent velocity as a vector.
+        Vector2D velocity = new Vector2D(0, 0);
+
+        // The vectory class requires that we ADD polar coordinates to a vector -- does
+        // not allow polar coordinate initialization.
+        velocity.SetPolar(speed, angle);
+
+        // Split vector into x velocity and y velocity to move at the specified angle.
+        double velocityXComponent = velocity.GetXComponent();
+        double velocityYComponent = velocity.GetYComponent();
+
+        if (DEBUG) {
+            tm.addData("Velocity Y Component: ", velocityYComponent);
+            tm.update();
+        }
+
+        int initialEncoderRotation = encoderMotor.getCurrentPosition();
+        if (DEBUG) {
+            tm.addData("ODS Distance: " + Integer.toString(encoderMotor.getCurrentPosition()), "");
+            tm.update();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Timekeeping variables...
+        long elapsedTime = 0;
+        long startTime = System.currentTimeMillis();
+
+        // loopTime = time between each loop iteration
+        long loopTime = System.currentTimeMillis();
+
+
+        // We need to account for elapsed time, potential stop conditions from the opmode container,
+        // and changes in encoder position.
+
+        while (elapsedTime <= timeout && context.opModeIsActive()) {
+         /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
+            double correctionAngular = imupidController.calculatePID(loopTime/1000);
+            double tweenPower = ASAMController.interpolateTweenCurve(timeout, elapsedTime, 0, (float) velocityYComponent, TWEEN_ACCEL_TIME, tm);
+
+            applyMotorPower(velocityXComponent, tweenPower,  correctionAngular);
+
+            // Update time...
+            long currSysTime = System.currentTimeMillis();
+            elapsedTime = currSysTime - startTime;
+            loopTime = currSysTime - loopTime;
+        }
+        STOP();
+    }
 
     /**
      * Takes in x, y, and angular components of movement, and adds/subtracts them from the
