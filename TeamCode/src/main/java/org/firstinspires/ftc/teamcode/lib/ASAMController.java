@@ -16,11 +16,6 @@ public class ASAMController {
         public static double interpolateTweenCurve(long totalRunTime, long elapsedTime, float startSpeed, float endSpeed, long accelTimeMillis, Telemetry t) {
             double ret;
             String curveSection;
-            Log.d("ASAM", "totalRunTime: "+String.valueOf(totalRunTime));
-            Log.d("ASAM", "elapsedTime: "+String.valueOf(elapsedTime));
-            Log.d("ASAM", "startSpeed: "+ String.valueOf(startSpeed));
-            Log.d("ASAM", "endSpeed: " + String.valueOf(endSpeed));
-            Log.d("ASAM", "accelTimeMillis: " + String.valueOf(accelTimeMillis));
             if (elapsedTime <= accelTimeMillis) {
                 curveSection = "Accel";
                 ret = ((startSpeed - endSpeed) / 2) * Math.cos((elapsedTime * Math.PI) / accelTimeMillis) + (startSpeed + endSpeed) / 2;
