@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.lib;
 
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.lib.EncoderDistanceConverter;
 import org.redshiftrobotics.lib.pid.IMUImpl;
 import org.redshiftrobotics.lib.pid.IMUPIDController;
 import org.redshiftrobotics.lib.pid.Vector2D;
@@ -27,7 +24,7 @@ public class MecanumRobot {
     private DcMotor encoderMotor;
     private PulsarRobotHardware hw;
 
-    long TWEEN_ACCEL_TIME = 700;
+    long tweenTime = 700;
 
    // CoordinatePIDController xyController;
 
@@ -127,6 +124,11 @@ public class MecanumRobot {
   /* public void moveStraight(float speed, long timeout, double cmDistance) {
        moveStraight(speed, 3f/2f * Math.PI, timeout, cmDistance);
    }*/
+
+
+    public void setTweenTime(long tweenTime) {
+        this.tweenTime = tweenTime;
+    }
 
     /**
      * Moves a mecanum chassis straight at a specific angle for a specific distance in centimeters.
@@ -541,7 +543,7 @@ public class MecanumRobot {
         while (elapsedTime <= timeout && context.opModeIsActive()) {
          /*frontLeft.getCurrentPosition() < targetEncoderRotation*/
             double correctionAngular = imupidController.calculatePID(loopTime/1000);
-            double tweenPower = ASAMController.interpolateTweenCurve(timeout, elapsedTime, 0, (float) velocityYComponent, TWEEN_ACCEL_TIME, tm);
+            double tweenPower = ASAMController.interpolateTweenCurve(timeout, elapsedTime, 0, (float) velocityYComponent, tweenTime, tm);
 
             applyMotorPower(velocityXComponent, tweenPower,  correctionAngular);
 

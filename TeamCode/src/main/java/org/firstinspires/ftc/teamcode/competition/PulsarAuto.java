@@ -218,6 +218,21 @@ abstract public class PulsarAuto extends LinearOpMode {
             return;
         }
 
+        Thread.sleep(1000);
+        robot.moveStraightMillis(1, 3 * Math.PI / 2, 1550);
+
+        hw.initializePositionsTeleop();
+        hw.conveyorLiftLeft.setPosition(0.28);
+        hw.conveyorLiftRight.setPosition(0.28);
+
+        robot.turn(85, 3000);
+        robot.setTweenTime(100);
+        robot.moveStraightMillis(0.7f, 3 * Math.PI / 2, 400);
+
+        hw.conveyor.setPower(1);
+
+        while (opModeIsActive()) { idle(); }
+        /*
         robot.moveStraight(1, 3 * Math.PI / 2, 5000, alliance.getDistanceToClearStone(startPosition));
         Thread.sleep(1000);
 
