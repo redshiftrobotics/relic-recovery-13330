@@ -1,12 +1,8 @@
 package org.firstinspires.ftc.teamcode.competition;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
@@ -16,157 +12,105 @@ import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
  */
 @TeleOp(name="Pulsar Teleop", group="Pulsar")
 public class PulsarTeleop extends LinearOpMode{
-    PulsarRobotHardware hw;
+    private PulsarRobotHardware hw;
 
-    static final double CONVEYOR_BELT_POWER_SCALAR = 0.85;
+    private static final double CONVEYOR_BELT_POWER_SCALAR = 0.85;
 
-    static final double INTAKE_POWER_SCALAR = 0.5;
+    private static final double INTAKE_POWER_SCALAR = 0.5;
+    private static final double INTAKE_TURNING_SCALAR = 0.1;
 
-    static final double INTAKE_UP_POSITION = 1;
-    static final double INTAKE_DOWN_POSITION = 0;
+    private static final double DRIVE_POWER_SCALAR = 0.95;
 
-    static final double DRIVE_POWER_SCALAR = 0.95;
+    private double xPower = 0;
+    private double yPower = 0;
+    private double pPower = 0;
+    private double anglePower = 0;
+    private double targetAngle = 180;
+    private double currentAngle = 180;
+    private double cryptoboxAngle = 104;
+    private double lastAngle = 180;
+    private double pConstant = 5;
 
-    double xPower = 0;
-    double yPower = 0;
-    double pPower = 0;
-    double anglePower = 0;
-    double targetAngle = 180;
-    double currentAngle = 180;
-    double cryptoboxAngle = 104;
-    double lastAngle = 180;
-    double pConstant = 5;
+    private boolean isTurning = false;
 
-    boolean isTurning = false;
+    private double flPower = 0;
+    private double frPower = 0;
+    private double blPower = 0;
+    private double brPower = 0;
+    private double maxPower = 0;
 
-    double flPower = 0;
-    double frPower = 0;
-    double blPower = 0;
-    double brPower = 0;
-    double maxPower = 0;
+    private String fuckingDebug = "nothing";
 
-    String fuckingDebug = "nothing";
-
-    boolean lastRB = false;
-    boolean lastLB = false;
-
+    // For some bizarre reason, using a normal OpMode breaks everything. So we use a LinearOpMode.
     @Override
     public void runOpMode() throws InterruptedException {
-        init_();
-        waitForStart();
-        while (opModeIsActive()) { loop_(); }
-    }
-
-    public void init_() {
+        // Initialization
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
         hw = new PulsarRobotHardware(hardwareMap, null);
 
-        setServos();
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "IMUConfig.json";
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-
-        hw.imu.initialize(parameters);
+        hw.initializePositionsTeleop();
+        hw.conveyorDown();
 
         telemetry.addLine("Ready for TeleOp!");
+        telemetry.addLine();
+        telemetry.addLine("Press START to Begin!");
         telemetry.update();
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            readDriverControls(gamepad1);
+            //debug_updatePConstant(gamepad2);
+            computePLoop();
+            driveMotors();
+            controlIntake(gamepad2);
+            controlConveyor(gamepad2);
+            storeCryptoboxAlignment(gamepad2);
+            sendTelemetry();
+            idle();
+        }
     }
 
-    private void setServos() {
-      //  hw.leftJewelServo.setPosition(0.2);
-      //  hw.rightJewelServo.setPosition(0.55);
-        hw.initializePositionsTeleop();
-
-        hw.intakeServoRight.setDirection(Servo.Direction.REVERSE);
-/*
-        hw.intakeServoLeft.setPosition(0.38);
-        hw.intakeServoRight.setPosition(0.66);
-
-*/
-        hw.conveyorLiftLeft.setPosition(0.28);
-        hw.conveyorLiftRight.setPosition(0.28);
-    }
-
-    public void loop_() {
-        UpdateMovements(gamepad1);
-        //UpdatePConstants(gamepad2);
-        CalculateMovements();
-        ControlRobot();
-        ControlConveyor(gamepad2);
-        StoreRotation(gamepad2);
-        UpdateTelemetry();
-        idle();
-    }
-
-    public void StoreRotation(Gamepad pad) { //Function that updates the stored rotation, can be customized to use a specific controller
+    private void storeCryptoboxAlignment(Gamepad pad) { //Function that updates the stored rotation, can be customized to use a specific controller
         if (pad.b) cryptoboxAngle = currentAngle;
         if (pad.x) targetAngle = cryptoboxAngle;
     }
 
-    public void UpdateMovements(Gamepad pad){ //Function that updates the movement constants, can be customized to use a specific controller
+    private void readDriverControls(Gamepad pad){ //Function that updates the movement constants, can be customized to use a specific controller
         xPower = pad.right_stick_x * DRIVE_POWER_SCALAR;
         yPower = -pad.right_stick_y * DRIVE_POWER_SCALAR;
         anglePower = -pad.left_stick_x * DRIVE_POWER_SCALAR;
     }
 
-    public void UpdatePConstants(Gamepad pad){ //Function that updates the P constants, can be customized to use a specific controller
-        if (pad.left_bumper != lastLB) { pConstant += 0.2; }
-        if (pad.right_bumper != lastRB) { pConstant -= 0.2; }
-        lastLB = pad.left_bumper; lastRB = pad.right_bumper;
+    private void controlIntake(Gamepad pad) {
+        // Intake Power
+        hw.leftIntake.setPower((-pad.right_stick_y * INTAKE_POWER_SCALAR) - (pad.right_stick_x * INTAKE_TURNING_SCALAR));
+        hw.rightIntake.setPower((-pad.right_stick_y * INTAKE_POWER_SCALAR) + (pad.right_stick_x * INTAKE_TURNING_SCALAR));
+
+        // Intake Positioning
+        if (pad.a) { hw.intakeUp(); }
+        if (pad.y) { hw.intakeDown(); }
     }
 
-    private void ControlConveyor(Gamepad pad) {
-        /*
-        hw.leftIntake.setDirection(pad.left_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        hw.rightIntake.setDirection(pad.right_bumper ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
-        double scalar = INTAKE_POWER_SCALAR;
-        if (pad.right_bumper) { scalar *= 0.5; }
-        hw.leftIntake.setPower(pad.left_trigger * (scalar));
-        hw.rightIntake.setPower(pad.right_trigger * (scalar));
-*/
-
-        hw.leftIntake.setPower((-pad.right_stick_y) - (pad.right_stick_x * 0.2));
-        hw.rightIntake.setPower((-pad.right_stick_y) + (pad.right_stick_x * 0.2));
-
-
-        // ----
+    private void controlConveyor(Gamepad pad) {
+        // Conveyor Power
         hw.conveyor.setPower(-pad.left_stick_y * CONVEYOR_BELT_POWER_SCALAR);
 
-
-
-        // Up/Down
-        if (pad.a) {
-            hw.intakeServoLeft.setPosition(INTAKE_DOWN_POSITION);
-            hw.intakeServoRight.setPosition(INTAKE_DOWN_POSITION);
-        }
-        if (pad.y) {
-            hw.intakeServoLeft.setPosition(INTAKE_UP_POSITION);
-            hw.intakeServoRight.setPosition(INTAKE_UP_POSITION);
-        }
-
-        if (pad.dpad_up) {
-            hw.conveyorLiftLeft.setPosition(0.45);
-            hw.conveyorLiftRight.setPosition(0.45);
-        } else if (pad.dpad_down) {
-            hw.conveyorLiftLeft.setPosition(0.28);
-            hw.conveyorLiftRight.setPosition(0.28);
-        }
+        // Conveyor Positioning
+        if (pad.dpad_up) { hw.conveyorUp(); }
+        if (pad.dpad_down) { hw.conveyorDown(); }
     }
 
-    public void ControlRobot(){ //Function to control all hardware devices on the robot
+    private void driveMotors(){ //Function to control all hardware devices on the robot
         hw.frontLeft.setPower(flPower);
         hw.frontRight.setPower(frPower);
         hw.backLeft.setPower(blPower);
         hw.backRight.setPower(brPower);
     }
 
-    public void UpdateTelemetry(){ //Function to telemetry out important values
+    private void sendTelemetry(){ //Function to telemetry out important values
         telemetry.addData("Current Angle", currentAngle + ", Target Angle: " + targetAngle);
         telemetry.addData("debug", fuckingDebug);
         telemetry.addData("pConstant", pConstant);
@@ -181,7 +125,7 @@ public class PulsarTeleop extends LinearOpMode{
         telemetry.update();
     }
 
-    public void CalculateMovements(){ //Function to control the robot's movements, this includes calculating P and calculating the motor powers
+    private void computePLoop(){ //Function to control the robot's movements, this includes calculating P and calculating the motor powers
         lastAngle = currentAngle;
         currentAngle = hw.imu.getAngularOrientation().firstAngle + 180f;
         if (anglePower != 0) isTurning = true;
