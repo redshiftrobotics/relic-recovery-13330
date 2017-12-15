@@ -41,7 +41,7 @@ public class MecanumRobot {
     // We still need to debug!
     Telemetry tm;
 
-    static float ANGLE_THRESHOLD = 0.1f;
+    static float ANGLE_THRESHOLD = 1f;
     static float TARGET_ANGLE_INITIAL = 180f;
 
     /**
@@ -51,7 +51,7 @@ public class MecanumRobot {
     private static float P_TUNING_TURN = 100f, I_TUNING_TURN = 0.0069f, D_TUNING_TURN = 0f;
 
     // Simple debug enable/disable
-    static boolean DEBUG = true;
+    static boolean DEBUG = false;
 
     /** Primary Constructor
      *

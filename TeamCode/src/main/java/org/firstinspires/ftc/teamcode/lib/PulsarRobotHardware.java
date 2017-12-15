@@ -47,7 +47,7 @@ public class PulsarRobotHardware {
     public final double RIGHT_JEWEL_UP_POSITON = 0.8;
     public final double RIGHT_JEWEL_DOWN_POSITON = 0;
 
-    public final double CONVEYOR_SPEED = 0;
+    public final double CONVEYOR_SPEED = 0.65;
     public final double CONVEYOR_LIFT_UP_POSITION = 0.45;
     public final double CONVEYOR_LIFT_DOWN_POSITON = 0.28;
 
@@ -71,6 +71,7 @@ public class PulsarRobotHardware {
         jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
         leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
         rightJewelDetector = leftJewelDetector;
+        //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
         jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
         conveyor = hardwareMap.dcMotor.get("conveyor");

@@ -102,7 +102,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.addLine("Jewel Lowered");
         telemetry.update();
 
-        Thread.sleep(1000); // TODO: Tune Value
+        Thread.sleep(250); // TODO: Tune Value
 
         TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, hw.jewelDetector);
 
@@ -120,7 +120,7 @@ abstract public class PulsarAuto extends LinearOpMode {
             telemetry.addLine("Jewel re-lowered");
             telemetry.update();
 
-            Thread.sleep(1000); // TODO: Tune Value
+            Thread.sleep(250); // TODO: Tune Value
 
             targetJewelPosition = alliance.getTargetJewel(startPosition, hw.jewelDetector);
         }
@@ -153,16 +153,27 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.update();
     }
 
-    private void scoreInCryptobox() {
-        robot.moveStraightMillis(1, 3 * Math.PI / 2, 1550);
+    private void scoreInCryptobox() throws InterruptedException {
+        hw.jewelsUp();
+        Thread.sleep(200);
+        hw.conveyorDown();
+        // robot.moveStraightMillis(1, 3 * Math.PI / 2, 1650);
+        robot.moveStraightMillis(0.7f, 3*Math.PI/2, 2350);
 
         hw.initializePositionsTeleop();
-        hw.conveyorDown();
 
         robot.turn(85, 3000);
         robot.setTweenTime(100);
         robot.moveStraightMillis(0.7f, 3 * Math.PI / 2, 400);
-
         hw.conveyor.setPower(hw.CONVEYOR_SPEED);
+        Thread.sleep(6000);
+
+        robot.moveStraightMillis(0.7f, Math.PI / 2, 500);
+        robot.setTweenTime(0);
+        robot.moveStraightMillis(1, 3 * Math.PI / 2, 750);
+        robot.moveStraightMillis(1, Math.PI / 2, 200);
+        hw.conveyor.setPower(0);
+        robot.setTweenTime(100);
+
     }
 }
