@@ -68,11 +68,13 @@ public class PulsarRobotHardware {
 
         leftJewelServo = hardwareMap.servo.get("leftJewel");
         rightJewelServo = hardwareMap.servo.get("rightJewel");
-        jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
+        //jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
+        jewelServo = leftJewelServo;
         leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
-        rightJewelDetector = leftJewelDetector;
         //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
-        jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
+        rightJewelDetector = leftJewelDetector;
+        jewelDetector = leftJewelDetector;
+        //jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
         conveyor = hardwareMap.dcMotor.get("conveyor");
         conveyorLiftLeft = hardwareMap.servo.get("conveyorLiftLeft");
@@ -145,5 +147,11 @@ public class PulsarRobotHardware {
     public void intakeDown() {
         intakeServoLeft.setPosition(INTAKE_DOWN_POSITION);
         intakeServoRight.setPosition(INTAKE_DOWN_POSITION);
+    }
+
+    public void intakeHalf() {
+        double pos = (INTAKE_DOWN_POSITION + INTAKE_UP_POSITION) / 2;
+        intakeServoLeft.setPosition(pos);
+        intakeServoRight.setPosition(pos);
     }
 }

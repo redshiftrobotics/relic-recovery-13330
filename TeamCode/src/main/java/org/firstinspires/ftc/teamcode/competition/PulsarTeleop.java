@@ -47,6 +47,8 @@ public class PulsarTeleop extends LinearOpMode{
     private double brPower = 0;
     private double maxPower = 0;
 
+    private double currentServoPosition = 0;
+
     private String fuckingDebug = "nothing";
 
     // For some bizarre reason, using a normal OpMode breaks everything. So we use a LinearOpMode.
@@ -76,7 +78,7 @@ public class PulsarTeleop extends LinearOpMode{
             computePLoop();
             driveMotors();
             controlIntake(gamepad2);
-            controlConveyor(gamepad2);
+           // controlConveyor(gamepad2);
             controlIntakeShortcut(gamepad2);
             storeCryptoboxAlignment(gamepad2);
             sendTelemetry();
@@ -128,8 +130,21 @@ public class PulsarTeleop extends LinearOpMode{
         hw.rightIntake.setPower((-pad.right_stick_y * INTAKE_POWER_SCALAR) + (pad.right_stick_x * INTAKE_TURNING_SCALAR));
 
         // Intake Positioning
-        if (pad.y) { hw.intakeUp(); }
-        if (pad.a) { hw.intakeDown(); }
+       /* double pos = (-pad.left_stick_y + 1)/2;
+        hw.intakeServoLeft.setPosition(pos);
+        hw.intakeServoRight.setPosition(pos);*/
+       if (pad.left_bumper) {
+           currentServoPosition -= 0.025;
+       }
+
+       if (pad.right_bumper) {
+           currentServoPosition += 0.025;
+       }
+
+        currentServoPosition = Range.clip(currentServoPosition, 0, 1);
+
+        hw.intakeServoLeft.setPosition(currentServoPosition);
+        hw.intakeServoRight.setPosition(currentServoPosition);
     }
 
     private void controlConveyor(Gamepad pad) {

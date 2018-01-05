@@ -23,7 +23,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  * It telemetries out position, rotation, and which column is the correct column.
  */
 @Autonomous(name="Pictograph Identification", group="Vuforia")
-@Disabled
 public class PictographIdentification extends LinearOpMode{
 
     OpenGLMatrix lastLocation = null;
