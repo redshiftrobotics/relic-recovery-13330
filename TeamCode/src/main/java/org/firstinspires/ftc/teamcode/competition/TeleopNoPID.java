@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.competition;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,8 +11,9 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Duncan on 9/19/2017.
  */
 
-@TeleOp(name = "Pulsar Teleop")
-public class MecanumTeleop extends OpMode{
+@TeleOp(name = "Pulsar Teleop (No PID)")
+@Disabled
+public class TeleopNoPID extends OpMode{
     static double TICKS_PER_CM = 1/1440;
 
     DcMotor frontLeft;
@@ -36,21 +38,21 @@ public class MecanumTeleop extends OpMode{
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
-        frontLeft = hardwareMap.dcMotor.get("fl");
-        frontRight = hardwareMap.dcMotor.get("fr");
-        backLeft = hardwareMap.dcMotor.get("bl");
-        backRight = hardwareMap.dcMotor.get("br");
+        frontLeft = hardwareMap.dcMotor.get("frontLeft");
+        frontRight = hardwareMap.dcMotor.get("frontRight");
+        backLeft = hardwareMap.dcMotor.get("backLeft");
+        backRight = hardwareMap.dcMotor.get("backRight");
         //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         conveyor = hardwareMap.dcMotor.get("conveyor");
         conveyorLift = hardwareMap.servo.get("conveyorLift");
-        leftIntake = hardwareMap.dcMotor.get("leftIntake");
-        rightIntake = hardwareMap.dcMotor.get("rightIntake");
+        leftIntake = hardwareMap.dcMotor.get("collectorLeft");
+        rightIntake = hardwareMap.dcMotor.get("collectorRight");
         leftJewel = hardwareMap.servo.get("leftJewel");
         rightJewel = hardwareMap.servo.get("rightJewel");
 
-        collectorLeft = hardwareMap.servo.get("collectorLeft");
-        collectorRight = hardwareMap.servo.get("collectorRight");
+        collectorLeft = hardwareMap.servo.get("collectorServoLeft");
+        collectorRight = hardwareMap.servo.get("collectorServoRight");
 
         setServos();
 

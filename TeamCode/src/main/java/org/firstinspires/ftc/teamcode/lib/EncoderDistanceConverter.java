@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.lib;
 
 /**
  * Created by adam on 10/25/17.
  */
-public class Conversion {
+public class EncoderDistanceConverter {
     public static int FULL_ENCODER_ROTATION = 1440;
 
     // Wheel diameter of Andy mark mecanum wheels. Don't know the exact model number, but they

@@ -1,221 +1,221 @@
 package org.firstinspires.ftc.teamcode.competition;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.teamcode.ColumnController;
+import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
+import org.firstinspires.ftc.teamcode.lib.VuforiaController;
+import org.redshiftrobotics.lib.vuforia.ColumnController;
+import org.firstinspires.ftc.teamcode.lib.MecanumRobot;
 
 
 abstract public class PulsarAuto extends LinearOpMode {
     abstract protected Alliance getAlliance();
     abstract protected StartPosition getStartPosition();
+    protected boolean isSimpleAuto() { return false; }
 
-    protected enum Alliance {
+    public enum Alliance {
         BLUE, RED;
 
-        public TargetJewelPosition getTargetJewel(StartPosition pos, ColorSensor colorSensor) {
+        protected TargetJewelPosition getTargetJewel(StartPosition pos, ColorSensor colorSensor) {
             int red = colorSensor.red();
             int blue = colorSensor.blue();
 
-            Alliance frontJewel;
+            Alliance backJewel;
 
-            if (red > 3 && red > blue) frontJewel = RED;
-            else if (blue > 3 && blue > red) frontJewel = BLUE;
+            if (red > blue) backJewel = RED;
+            else if (blue > red) backJewel = BLUE;
             else return TargetJewelPosition.NONE;
-
-            if (frontJewel == this) return TargetJewelPosition.BACK;
-            else return TargetJewelPosition.FRONT;
+            //old: back:front; new: front:back
+            if (backJewel == this) return TargetJewelPosition.FRONT;
+            else return TargetJewelPosition.BACK;
         }
 
-        public double getJewelUpPosition(StartPosition pos) { return this == BLUE ? 0.2 : 0.55; }
-        public double getJewelDownPosition(StartPosition pos) { return this == BLUE ? 0.785 : 0.235; }
-        public double getJewelDownAltPosition(StartPosition pos) { return this == BLUE ? 0.75 : 0.25; }
-        public double getFrontJewelKnockOffAngle(StartPosition pos) { return this == BLUE ? 10 : -10; }
-        public double getDistanceToClearStone(StartPosition pos) { return 26.5; }
-        public double getAngleToAlignWithCryptobox(StartPosition pos) {
-            if (pos == StartPosition.FRONT) {
-                if (this == BLUE) return -90;
-                return 90;
-            } else {
-                return 0;
-            }
+        protected double getJewelUpPosition(StartPosition pos) {
+            return 0.2;
+            //return this == BLUE ? 0.2 : 0.55;
         }
 
-        public double getDistanceToAlignWithColumn(StartPosition pos, RelicRecoveryVuMark column) {
-            if (this == BLUE) {
-                if (pos == StartPosition.FRONT) {
-                    switch (column) {
-                        case LEFT: return 10;
-                        case CENTER: return 30;
-                        case RIGHT: return 50;
-                    }
-                } else {
-                    switch (column) {
-                        case LEFT: return 10;
-                        case CENTER: return 30;
-                        case RIGHT: return 50;
-                    }
-                }
-            } else {
-                if (pos == StartPosition.FRONT) {
-                    switch (column) {
-                        case RIGHT: return 10;
-                        case CENTER: return 30;
-                        case LEFT: return 50;
-                    }
-                } else {
-                    switch (column) {
-                        case RIGHT: return 10;
-                        case CENTER: return 30;
-                        case LEFT: return 50;
-                    }
-                }
-            }
-            return 0;
+        protected double getJewelDownPosition(StartPosition pos) {
+            return this == BLUE ? 0.800 : 0.700;
         }
-        public double getAngleToFaceCryptobox(StartPosition pos) { return this == BLUE ? -90 : 90; }
+
+        protected double getJewelDownAltPosition(StartPosition pos) {
+            return 0.60;
+            //return this == BLUE ? 0.65 : 0.25;
+        }
+
+        protected double getJewelKnockOffAngle(StartPosition pos) {
+            return 10;
+            //return this == BLUE ? 10 : -10;
+        }
+
+        protected double getDistanceToClearStone(StartPosition pos) {
+            return 5.0;
+        }
+
+        protected double getRotationToFaceCyptobox(StartPosition pos) {
+            return 90;
+        }
     }
-    protected enum StartPosition { BACK, FRONT }
 
-    protected enum TargetJewelPosition { FRONT, BACK, NONE }
+    protected enum StartPosition {BACK, FRONT}
 
-    protected DcMotor frontLeft;
-    protected DcMotor frontRight;
-    protected DcMotor backLeft;
-    protected DcMotor backRight;
+    protected enum TargetJewelPosition {FRONT, BACK, NONE}
 
-    protected Servo jewel;
-    protected Servo leftJewel;
-    protected Servo rightJewel;
+    private StartPosition startPosition = getStartPosition();
+    private Alliance alliance = getAlliance();
 
-    protected ColorSensor jewelDetector;
-    protected ColorSensor leftJewelDetector;
-    protected ColorSensor rightJewelDetector;
-
-    protected DcMotor conveyor;
-
-    protected StartPosition startPosition = getStartPosition();
-    protected Alliance alliance = getAlliance();
-
-    protected boolean PULSAR_SIMPLE_AUTO = false;
-
-     MecanumRobot robot;
-
-     ColumnController columnController;
-
-     BNO055IMU imu;
-
-     void moveStraight(float speed, long timeout, double cmDistance) {
-        robot.moveStraight(speed, timeout, cmDistance);
-    }
+    private RelicRecoveryVuMark targetColumn;
+    private VuforiaController vuforiaController;
+    MecanumRobot robot;
+    protected PulsarRobotHardware hw;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        frontLeft = hardwareMap.dcMotor.get("fl");
-        frontRight = hardwareMap.dcMotor.get("fr");
-        backLeft = hardwareMap.dcMotor.get("bl");
-        backRight = hardwareMap.dcMotor.get("br");
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        columnController = new ColumnController(hardwareMap);
-        leftJewel = hardwareMap.servo.get("leftJewel");
-        rightJewel = hardwareMap.servo.get("rightJewel");
-        leftJewelDetector = hardwareMap.colorSensor.get("leftJewelDetector");
-        rightJewelDetector = hardwareMap.colorSensor.get("rightJewelDetector");
-        conveyor = hardwareMap.dcMotor.get("conveyor");
+        telemetry.addLine("Initializing For Auto!");
+        telemetry.update();
 
-        leftJewel.setPosition(Alliance.BLUE.getJewelUpPosition(startPosition));
-        rightJewel.setPosition(Alliance.RED.getJewelUpPosition(startPosition));
+        hw = new PulsarRobotHardware(hardwareMap, getAlliance());
+        robot = new MecanumRobot(hw, this, telemetry);
 
-        jewel = (alliance == Alliance.BLUE) ? leftJewel : rightJewel;
-        jewelDetector = (alliance == Alliance.BLUE) ? leftJewelDetector : rightJewelDetector;
+        hw.initializePositions(telemetry);
 
-        robot = new MecanumRobot(
-                frontLeft,
-                frontRight,
-                backLeft,
-                backRight,
-                imu,
-                this,
-                telemetry
-        );
+        vuforiaController = new VuforiaController(hardwareMap);
+
         telemetry.addLine("Ready");
         telemetry.update();
 
         waitForStart();
 
+        targetColumn = vuforiaController.detectColumn();
+        telemetry.addData("column", targetColumn.toString());
 
-        jewel.setPosition(alliance.getJewelDownPosition(startPosition));
+        hw.jewelServo.setPosition(alliance.getJewelDownPosition(startPosition));
 
         telemetry.addLine("Jewel Lowered");
         telemetry.update();
 
-        Thread.sleep(1000);
+        Thread.sleep(2000); // TODO: Tune Value
 
-        TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+        knockOffJewel(detectJewel());
 
-        telemetry.addData("saw jewel", targetJewelPosition.toString());
+        if (isSimpleAuto()) {
+            //simpleAutoParkInSafeZone();
+        } else {
+            scoreInCryptobox(targetColumn);
+        }
+
+        hw.intakeDown();
+
+        while (opModeIsActive()) { idle(); } // This prevents the servos from ragdolling.
+    }
+
+    private TargetJewelPosition detectJewel() throws InterruptedException {
+        hw.jewelServo.setPosition(alliance.getJewelDownPosition(startPosition));
+
+        telemetry.addLine("Jewel Lowered");
+        telemetry.update();
+
+        Thread.sleep(250); // TODO: Tune Value
+
+        TargetJewelPosition targetJewelPosition = alliance.getTargetJewel(startPosition, hw.jewelDetector);
+
+        telemetry.addData("r", hw.jewelDetector.red());
+        telemetry.addData("g", hw.jewelDetector.green());
+        telemetry.addData("b", hw.jewelDetector.blue());
+        telemetry.addData("saw jewelServo", targetJewelPosition.toString());
+
         if (targetJewelPosition == TargetJewelPosition.NONE) {
+            telemetry.addLine("Couldn't see jewel, moving...");
             telemetry.update();
-            telemetry.addLine("Got None, moving");
-            jewel.setPosition(alliance.getJewelDownAltPosition(startPosition));
+            hw.jewelServo.setPosition(alliance.getJewelDownAltPosition(startPosition));
 
-            telemetry.addLine("Jewel Lowered");
+            telemetry.addLine("Jewel re-lowered");
             telemetry.update();
 
-            Thread.sleep(1000);
+            Thread.sleep(250); // TODO: Tune Value
 
-            targetJewelPosition = alliance.getTargetJewel(startPosition, jewelDetector);
+            targetJewelPosition = alliance.getTargetJewel(startPosition, hw.jewelDetector);
         }
+
+        return targetJewelPosition;
+    }
+
+    private void knockOffJewel(TargetJewelPosition targetJewelPosition) {
+        if (targetJewelPosition == TargetJewelPosition.NONE) return;
+        double scalar = targetJewelPosition == TargetJewelPosition.FRONT ? -1 : 1;
+        //robot.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000);
+        robot.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
+        if (targetColumn == RelicRecoveryVuMark.UNKNOWN) {
+            targetColumn = vuforiaController.detectColumn();
+            telemetry.addData("column take 2", targetColumn.toString());
+            telemetry.update();
+        }
+        hw.jewelsUp();
+        //robot.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000);
+        robot.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
+    }
+
+    private void simpleAutoParkInSafeZone() {
+        if (!isSimpleAuto()) throw new IllegalStateException("Attempted to run simple auto in non-simple auto!");
+        double angle = 3 * Math.PI / 2;
+        if ((alliance == Alliance.RED && startPosition == StartPosition.FRONT) || (alliance == Alliance.BLUE && startPosition == StartPosition.BACK)) {
+            robot.turn(Math.PI / 5, 1600);
+        } else {
+            robot.turn(-Math.PI / 5, 1600);
+        }
+
+        hw.jewelsUp();
+
+        robot.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
+
+        telemetry.addLine("Simple auto only, exiting.");
         telemetry.update();
+    }
 
-        Thread.sleep(1000);
+    private void moveMillisSupertween(float speed, double angle, long time) {
+        robot.setTweenTime(time/2);
+        robot.moveStraightMillis(speed, angle, time);
+        robot.setTweenTime(700);
+    }
 
-        switch (targetJewelPosition) {
-            case FRONT: break; // We do this later
-            case BACK:
-                robot.turn(alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
-                jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-                robot.turn(-alliance.getFrontJewelKnockOffAngle(startPosition), 2000);
+    private void scoreInCryptobox(RelicRecoveryVuMark column) throws InterruptedException {
+        hw.jewelsUp();
+        Thread.sleep(200);
+        hw.conveyorDown();
+        // robot.moveStraightMillis(1, 3 * Math.PI / 2, 1650);
+        long baseMoveValue = alliance == Alliance.BLUE ? 2800 : 3800; // 2450 : 3800
+        switch (column) {
+            case LEFT:
+                baseMoveValue += 0;
                 break;
-            case NONE:
-                jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-                Thread.sleep(1000);
+            case CENTER:
+                baseMoveValue += 450;
+                break;
+            case RIGHT:
+                baseMoveValue += 900;
                 break;
         }
+        moveMillisSupertween(0.7f, alliance == Alliance.BLUE ? 3*Math.PI/2 : Math.PI/2, baseMoveValue);
 
-        moveStraight(1, 5000, alliance.getDistanceToClearStone(startPosition));
-        Thread.sleep(1000);
+        hw.initializePositionsTeleop();
 
-        jewel.setPosition(alliance.getJewelUpPosition(startPosition));
-        Thread.sleep(1000);
+        hw.intakeDown();
+        robot.turn(alliance.getRotationToFaceCyptobox(startPosition), 3000); // 3000
+        robot.setTweenTime(100);
+        robot.moveStraightMillis(0.7f, 3 * Math.PI / 2, 400);
+        hw.conveyor.setPower(hw.CONVEYOR_SPEED);
+        Thread.sleep(7500);
+        //robot.moveStraightMillis(0.7f, Math.PI / 2, 1000);
+        moveMillisSupertween(0.5f, Math.PI / 2, 2000);
+        robot.setTweenTime(0);
+        robot.moveStraightMillis(1, 3 * Math.PI / 2, 2000);
+        robot.moveStraightMillis(1, Math.PI / 2, 200);
+        hw.conveyor.setPower(0);
+        robot.setTweenTime(100);
 
-        if (PULSAR_SIMPLE_AUTO) {
-            telemetry.addLine("Simple auto only, exiting.");
-            telemetry.update();
-            return;
-        }
-
-        telemetry.addData("angle", alliance.getAngleToAlignWithCryptobox(startPosition));
-        telemetry.update();
-
-        robot.turn(alliance.getAngleToAlignWithCryptobox(startPosition), 2000);
-        robot.STOP();
-        Thread.sleep(10000);
-
-        moveStraight(1, 5000, alliance.getDistanceToAlignWithColumn(startPosition, columnController.getColumn()));
-        robot.STOP();
-        Thread.sleep(1000);
-
-        robot.turn(alliance.getAngleToFaceCryptobox(startPosition), 2000);
-        robot.STOP();
-        Thread.sleep(1000);
-
-        conveyor.setPower(1.0);
-        robot.STOP();
-        Thread.sleep(1000);
     }
 }

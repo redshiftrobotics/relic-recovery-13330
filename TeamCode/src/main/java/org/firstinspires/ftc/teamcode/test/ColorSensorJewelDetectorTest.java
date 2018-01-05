@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Duncan on 9/19/2017.
  */
 
-public class JewelSweeper extends LinearOpMode{
+public class ColorSensorJewelDetectorTest extends LinearOpMode{
 
     private String team = "red"; //Just for testing will be set up by a custom setting later
 

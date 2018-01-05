@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -7,7 +8,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by Duncan on 11/3/2017.
  */
-@TeleOp(name="LinearServoTest")
+@TeleOp(name="LinearServoTest2")
+@Disabled
 public class LinearServoTest extends OpMode{
     Servo conveyorLift;
     @Override

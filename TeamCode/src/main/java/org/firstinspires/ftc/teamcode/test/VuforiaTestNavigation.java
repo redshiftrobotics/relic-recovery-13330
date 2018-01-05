@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.test;
 
 /*
 Copyright (c) 2016 Robert Atkinson
@@ -85,7 +85,7 @@ import java.util.List;
  */
 
 @Autonomous(name="Concept: Vuforia Navigation", group ="Concept")
-
+@Disabled
 public class VuforiaTestNavigation extends LinearOpMode {
 
     public static final String TAG = "Vuforia Sample";
