@@ -3,14 +3,14 @@ package org.firstinspires.ftc.teamcode;
 
 import junit.framework.TestCase;
 
-import org.redshiftrobotics.lib.pid.IMUPIDController;
-import org.redshiftrobotics.lib.pid.MockIMU;
+import org.redshiftrobotics.lib.pid.PIDCalculator;
+import org.redshiftrobotics.lib.pid.imu.MockIMU;
 
 
 /**
  * Created by adam on 9/16/17.
  */
-public class IMUPIDControllerTest extends TestCase {
+public class PIDCalculatorTest extends TestCase {
 
     class testCase {
         float expected;
@@ -66,7 +66,7 @@ public class IMUPIDControllerTest extends TestCase {
         long dTMilliseconds = 10; //assume constant delta T of 10 ms
 
         MockIMU mockIMU = new MockIMU(testIMUData);
-        IMUPIDController controller = new IMUPIDController(mockIMU);
+        PIDCalculator controller = new PIDCalculator(mockIMU);
         controller.setTuning(1f, 1f, 1f);
 
         for (testCase test : testCases) {

@@ -1,14 +1,13 @@
-package org.firstinspires.ftc.teamcode.competition;
+package org.firstinspires.ftc.teamcode.competition.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
-import org.firstinspires.ftc.teamcode.lib.VuforiaController;
-import org.redshiftrobotics.lib.vuforia.ColumnController;
-import org.firstinspires.ftc.teamcode.lib.MecanumRobot;
+import org.redshiftrobotics.lib.vuforia.VuforiaController;
+import org.redshiftrobotics.lib.pid.StraightPIDController;
+import org.redshiftrobotics.lib.pid.TurningPIDController;
 
 
 abstract public class PulsarAuto extends LinearOpMode {
@@ -52,8 +51,8 @@ abstract public class PulsarAuto extends LinearOpMode {
             //return this == BLUE ? 10 : -10;
         }
 
-        protected double getDistanceToClearStone(StartPosition pos) {
-            return 5.0;
+        protected long getDistanceToClearStone(StartPosition pos) {
+            return 5;
         }
 
         protected double getRotationToFaceCyptobox(StartPosition pos) {
@@ -66,24 +65,26 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected enum TargetJewelPosition {FRONT, BACK, NONE}
 
     private StartPosition startPosition = getStartPosition();
-    private Alliance alliance = getAlliance();
+    private PulsarAuto.Alliance alliance = getAlliance();
 
     private RelicRecoveryVuMark targetColumn;
     private VuforiaController vuforiaController;
-    MecanumRobot robot;
     protected PulsarRobotHardware hw;
+    protected StraightPIDController straightPIDController;
+    protected TurningPIDController turningPIDController;
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.addLine("Initializing For Auto!");
         telemetry.update();
 
-        hw = new PulsarRobotHardware(hardwareMap, getAlliance());
-        robot = new MecanumRobot(hw, this, telemetry);
-
+        hw = new PulsarRobotHardware(this, getAlliance());
         hw.initializePositions(telemetry);
 
-        vuforiaController = new VuforiaController(hardwareMap);
+        vuforiaController = new VuforiaController(hw);
+
+        straightPIDController = new StraightPIDController(hw);
+        turningPIDController = new TurningPIDController(hw);
 
         telemetry.addLine("Ready");
         telemetry.update();
@@ -103,7 +104,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         knockOffJewel(detectJewel());
 
         if (isSimpleAuto()) {
-            //simpleAutoParkInSafeZone();
+            simpleAutoParkInSafeZone();
         } else {
             scoreInCryptobox(targetColumn);
         }
@@ -148,7 +149,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         if (targetJewelPosition == TargetJewelPosition.NONE) return;
         double scalar = targetJewelPosition == TargetJewelPosition.FRONT ? -1 : 1;
         //robot.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000);
-        robot.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
+        turningPIDController.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
         if (targetColumn == RelicRecoveryVuMark.UNKNOWN) {
             targetColumn = vuforiaController.detectColumn();
             telemetry.addData("column take 2", targetColumn.toString());
@@ -156,36 +157,30 @@ abstract public class PulsarAuto extends LinearOpMode {
         }
         hw.jewelsUp();
         //robot.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000);
-        robot.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
+        turningPIDController.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
     }
 
     private void simpleAutoParkInSafeZone() {
         if (!isSimpleAuto()) throw new IllegalStateException("Attempted to run simple auto in non-simple auto!");
         double angle = 3 * Math.PI / 2;
         if ((alliance == Alliance.RED && startPosition == StartPosition.FRONT) || (alliance == Alliance.BLUE && startPosition == StartPosition.BACK)) {
-            robot.turn(Math.PI / 5, 1600);
+            turningPIDController.turn(Math.PI / 5, 1600);
         } else {
-            robot.turn(-Math.PI / 5, 1600);
+            turningPIDController.turn(-Math.PI / 5, 1600);
         }
 
         hw.jewelsUp();
 
-        robot.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
+        straightPIDController.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
 
         telemetry.addLine("Simple auto only, exiting.");
         telemetry.update();
     }
 
-    private void moveMillisSupertween(float speed, double angle, long time) {
-        robot.setTweenTime(time/2);
-        robot.moveStraightMillis(speed, angle, time);
-        robot.setTweenTime(700);
-    }
-
     private void scoreInCryptobox(RelicRecoveryVuMark column) throws InterruptedException {
         hw.jewelsUp();
-        Thread.sleep(200);
         hw.conveyorDown();
+        Thread.sleep(200);
         // robot.moveStraightMillis(1, 3 * Math.PI / 2, 1650);
         long baseMoveValue = alliance == Alliance.BLUE ? 2800 : 3800; // 2450 : 3800
         switch (column) {
@@ -199,23 +194,18 @@ abstract public class PulsarAuto extends LinearOpMode {
                 baseMoveValue += 900;
                 break;
         }
-        moveMillisSupertween(0.7f, alliance == Alliance.BLUE ? 3*Math.PI/2 : Math.PI/2, baseMoveValue);
+        straightPIDController.moveStraight(0.7f, alliance == Alliance.BLUE ? 3*Math.PI/2 : Math.PI/2, baseMoveValue);
 
         hw.initializePositionsTeleop();
 
         hw.intakeDown();
-        robot.turn(alliance.getRotationToFaceCyptobox(startPosition), 3000); // 3000
-        robot.setTweenTime(100);
-        robot.moveStraightMillis(0.7f, 3 * Math.PI / 2, 400);
+        turningPIDController.turn(alliance.getRotationToFaceCyptobox(startPosition), 3000);
+        straightPIDController.moveStraight(0.7f, 3 * Math.PI / 2, 400, 100);
         hw.conveyor.setPower(hw.CONVEYOR_SPEED);
         Thread.sleep(7500);
-        //robot.moveStraightMillis(0.7f, Math.PI / 2, 1000);
-        moveMillisSupertween(0.5f, Math.PI / 2, 2000);
-        robot.setTweenTime(0);
-        robot.moveStraightMillis(1, 3 * Math.PI / 2, 2000);
-        robot.moveStraightMillis(1, Math.PI / 2, 200);
+        straightPIDController.moveStraight(0.5f, Math.PI / 2, 2000);
+        straightPIDController.moveStraight(1, 3 * Math.PI / 2, 2000);
+        straightPIDController.moveStraight(1, Math.PI / 2, 200);
         hw.conveyor.setPower(0);
-        robot.setTweenTime(100);
-
     }
 }

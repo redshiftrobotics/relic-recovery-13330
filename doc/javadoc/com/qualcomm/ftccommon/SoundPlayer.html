@@ -161,7 +161,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected Context</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#context">context</a></span></code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#opMode">opMode</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected int</code></td>
@@ -260,12 +260,12 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>protected int</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#getMsDuration-Context-int-">getMsDuration</a></span>(Context&nbsp;context,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#getMsDuration-Context-int-">getMsDuration</a></span>(Context&nbsp;opMode,
              int&nbsp;resourceId)</code>&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#loadAndPlay-Context-int-boolean-">loadAndPlay</a></span>(Context&nbsp;context,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#loadAndPlay-Context-int-boolean-">loadAndPlay</a></span>(Context&nbsp;opMode,
            int&nbsp;resourceId,
            boolean&nbsp;waitForCompletion)</code>
 <div class="block">Loads the requested sound if necessary, then (eventually) plays it.</div>
@@ -281,7 +281,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#play-Context-int-">play</a></span>(Context&nbsp;context,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#play-Context-int-">play</a></span>(Context&nbsp;opMode,
     int&nbsp;resId)</code>
 <div class="block">Asynchronously loads the indicated sound from its resource (if not already loaded), then
  initiates its play once any current sound is finished playing.</div>
@@ -289,7 +289,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#play-Context-int-boolean-">play</a></span>(Context&nbsp;context,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/qualcomm/ftccommon/SoundPlayer.html#play-Context-int-boolean-">play</a></span>(Context&nbsp;opMode,
     int&nbsp;resId,
     boolean&nbsp;waitForCompletion)</code>
 <div class="block">Asynchronously loads the indicated sound from its resource (if not already loaded), then
@@ -424,13 +424,13 @@ extends java.lang.Object</pre>
 <pre>protected&nbsp;Looper looper</pre>
 </li>
 </ul>
-<a name="context">
+<a name="opMode">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>context</h4>
-<pre>protected&nbsp;Context context</pre>
+<h4>opMode</h4>
+<pre>protected&nbsp;Context opMode</pre>
 </li>
 </ul>
 <a name="sharedPreferences">
@@ -536,13 +536,13 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>play</h4>
-<pre>public&nbsp;void&nbsp;play(Context&nbsp;context,
+<pre>public&nbsp;void&nbsp;play(Context&nbsp;opMode,
                  int&nbsp;resId)</pre>
 <div class="block">Asynchronously loads the indicated sound from its resource (if not already loaded), then
  initiates its play once any current sound is finished playing.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>context</code> - the context in which resId is to be interpreted</dd>
+<dd><code>opMode</code> - the opMode in which resId is to be interpreted</dd>
 <dd><code>resId</code> - the resource id of the raw resource containing the sound.</dd>
 </dl>
 </li>
@@ -553,14 +553,14 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>play</h4>
-<pre>public&nbsp;void&nbsp;play(Context&nbsp;context,
+<pre>public&nbsp;void&nbsp;play(Context&nbsp;opMode,
                  int&nbsp;resId,
                  boolean&nbsp;waitForCompletion)</pre>
 <div class="block">Asynchronously loads the indicated sound from its resource (if not already loaded), then
  initiates its play, optionally waiting for any currently playing sound to finish first.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>context</code> - the context in which resId is to be interpreted</dd>
+<dd><code>opMode</code> - the opMode in which resId is to be interpreted</dd>
 <dd><code>resId</code> - the resource id of the raw resource containing the sound.</dd>
 <dd><code>waitForCompletion</code> - whether to wait for any current sound to finish playing first or not</dd>
 </dl>
@@ -572,7 +572,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>loadAndPlay</h4>
-<pre>protected&nbsp;void&nbsp;loadAndPlay(Context&nbsp;context,
+<pre>protected&nbsp;void&nbsp;loadAndPlay(Context&nbsp;opMode,
                            int&nbsp;resourceId,
                            boolean&nbsp;waitForCompletion)</pre>
 <div class="block">Loads the requested sound if necessary, then (eventually) plays it.
@@ -588,7 +588,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getMsDuration</h4>
-<pre>protected&nbsp;int&nbsp;getMsDuration(Context&nbsp;context,
+<pre>protected&nbsp;int&nbsp;getMsDuration(Context&nbsp;opMode,
                             int&nbsp;resourceId)</pre>
 </li>
 </ul>
