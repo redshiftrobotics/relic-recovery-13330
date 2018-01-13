@@ -1,42 +1,40 @@
-package org.firstinspires.ftc.teamcode;
+package org.redshiftrobotics.lib.pid;
 
 
 import junit.framework.TestCase;
 
-import org.redshiftrobotics.lib.pid.PIDCalculator;
-import org.redshiftrobotics.lib.pid.imu.MockIMU;
-
-
-/**
- * Created by adam on 9/16/17.
- */
-
 
 public class PIDCalculatorTest extends TestCase {
 
-    class testCase {
+    class PIDTest {
+        double imuData;
         double expected;
-        double input;
+        double dT = 10;
         double target;
-       testCase expect(double expect) {
-           this.expected = expect;
-           return this;
-       }
 
-        testCase input(double input) {
-            this.input = input;
+        PIDTest imuData(double imuData) {
+            this.imuData = imuData;
             return this;
         }
-        testCase target(double target) {
+
+        PIDTest expect(double expect) {
+            this.expected = expect;
+            return this;
+        }
+
+        PIDTest target(double target) {
             this.target = target;
+            return this;
+        }
+
+        PIDTest dT(double dT) {
+            this.dT = dT;
             return this;
         }
     }
 
     public void testPIDLoop() {
-        double[] testIMUData = new double[]{0, 70f, 359, 1};
-        testCase[] testCases = new testCase[] {
-
+        PIDTest[] tests = new PIDTest[] {
                 //dT = 10
 
                 //Manually calculate P, I, and D each time
@@ -50,35 +48,34 @@ public class PIDCalculatorTest extends TestCase {
                 // input angle: 70
                 // target: 50
                 // (70-50) + [(70 - 50) * dT]/2000 + (70-50)/(dT/1000)
-                new testCase().target(50).expect(20.0011),
+                new PIDTest().imuData(70).target(50).expect(20.0011),
 
                 // input angle: 359
                 // target: 1
                 // (359 - (360  + 1)) = -2
                 // -2  + (-2 * dT) + -2/dT
                 // -2 - 20 -0.2 = -22.2
-               new testCase().target(1).expect(-2.00011),
+                new PIDTest().imuData(359).target(1).expect(-2.00011),
 
                 // input angle: 1
                 //target: 359
                 // (360 + 1) - 359 = 361 - 359 = 2
                 // 2 + (2 * dT) + 2/dT = 2 + 20 + 0.2 = +22.2
-                new testCase().target(359).expect(2.00011)
+                new PIDTest().imuData(1).target(359).expect(2.00011)
         };
 
-        long dTMilliseconds = 10; //assume constant delta T of 10 ms
-
-        MockIMU mockIMU = new MockIMU(testIMUData);
+        MockIMU mockIMU = new MockIMU();
         PIDCalculator controller = new PIDCalculator(mockIMU);
         controller.setTuning(new PIDCalculator.PIDTuning(1, 1, 1));
 
-        for (testCase test : testCases) {
+        for (PIDTest test : tests) {
+            mockIMU.setData(test.imuData);
             controller.clearData();
             controller.setTarget(test.target);
 
-            double correction = controller.calculatePID((double)dTMilliseconds/1000);
-            System.out.println(correction);
-            assertEquals((double) test.expected, correction, 0.1);
+            double correction = controller.calculatePID(test.dT / 1000);
+
+            assertEquals(test.expected, correction, 0.1);
         }
 
     }
