@@ -495,7 +495,7 @@ extends <a href="../../../com/qualcomm/ftccommon/FtcEventLoopBase.html" title="c
                                                 java.lang.InterruptedException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/qualcomm/robotcore/eventloop/EventLoop.html#processedRecentlyAttachedUsbDevices--">EventLoop</a></code></span></div>
 <div class="block">Process the batch of newly arrived USB devices. This is called on the EventLoop thread by
- the EventLoopManager; there is sufficient time and correct context to, e.g., fully arm the
+ the EventLoopManager; there is sufficient time and correct opMode to, e.g., fully arm the
  associated module software to make the device operational within the app.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
@@ -518,7 +518,7 @@ extends <a href="../../../com/qualcomm/ftccommon/FtcEventLoopBase.html" title="c
                                   java.lang.InterruptedException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../com/qualcomm/robotcore/eventloop/EventLoop.html#handleUsbModuleDetach-RobotUsbModule-">EventLoop</a></code></span></div>
 <div class="block">Process the fact that a usb module has now become detached from the system. This is called
- on the EventLoop thread by the EventLoopManager; there is sufficient time and correct context
+ on the EventLoop thread by the EventLoopManager; there is sufficient time and correct opMode
  to, e.g., fully disarm and 'pretend' the associated module.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>

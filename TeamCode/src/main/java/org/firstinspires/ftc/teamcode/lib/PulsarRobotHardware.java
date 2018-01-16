@@ -1,22 +1,27 @@
 package org.firstinspires.ftc.teamcode.lib;
 
+import android.content.Context;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.competition.PulsarAuto;
+import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
+import org.redshiftrobotics.lib.RobotHardware;
+import org.redshiftrobotics.lib.pid.PIDCalculator;
 
-/**
- * Created by ariporad on 2017-12-02.
- */
-
-public class PulsarRobotHardware {
+public class PulsarRobotHardware implements RobotHardware {
     public PulsarAuto.Alliance alliance;
 
-    // Sensors
+    public final LinearOpMode opMode;
+    public final Context appContext;
+
+    private final HardwareMap hardwareMap;
+
     public final DcMotor frontLeft;
     public final DcMotor frontRight;
     public final DcMotor backLeft;
@@ -55,10 +60,14 @@ public class PulsarRobotHardware {
     public final double INTAKE_DOWN_POSITION = 0;
 
 
-    public PulsarRobotHardware(HardwareMap hardwareMap, PulsarAuto.Alliance alliance) {
+    public PulsarRobotHardware(LinearOpMode opMode, PulsarAuto.Alliance alliance) {
         this.alliance = alliance;
+        this.opMode = opMode;
 
-        frontLeft = hardwareMap.dcMotor.get("frontLeft");
+        hardwareMap = opMode.hardwareMap;
+        appContext = opMode.hardwareMap.appContext;
+
+        frontLeft = getFrontLeft();
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
         backRight = hardwareMap.dcMotor.get("backRight");
@@ -84,6 +93,10 @@ public class PulsarRobotHardware {
         intakeServoRight = hardwareMap.servo.get("collectorServoRight");
         leftIntake = hardwareMap.dcMotor.get("collectorLeft");
         rightIntake = hardwareMap.dcMotor.get("collectorRight");
+    }
+
+   public DcMotor getFrontLeft() {
+        return hardwareMap.dcMotor.get("frontLeft");
     }
 
     private void initalizeIMU(BNO055IMU imu) {
@@ -153,5 +166,70 @@ public class PulsarRobotHardware {
         double pos = (INTAKE_DOWN_POSITION + INTAKE_UP_POSITION) / 2;
         intakeServoLeft.setPosition(pos);
         intakeServoRight.setPosition(pos);
+    }
+
+    /*
+     * When this helper method is used in a turning function, correctionAngular
+     * should be added to a power constant in order to make the wheels turn at a reasonable
+     * speed. For small corrections during straight movement though, this is unnecessary.
+     */
+    @Override
+    public void applyMotorPower(double velocityX, double velocityY,  double correctionAngular) {
+        /*
+         * Values are added and subtracted here based on the direction the wheels need to go on a
+         * mecanum chassis to perform specific movements. For instance, Y velocity is always added,
+         * because all motors go the same direction when moving forwards and backwards. Angular
+         * movement and strafing require changes, because different wheels must move in different
+         * directions to make the movement possible.
+         */
+
+        // FIXME: dividing all corrections by 2000 to prevent overflow is bad
+        double frontLeftPower = velocityY  - velocityX  - correctionAngular/2000;
+        double frontRightPower = velocityY + velocityX  + correctionAngular/2000;
+        double backRightPower = velocityY - velocityX + correctionAngular/2000;
+        double backLeftPower = velocityY + velocityX - correctionAngular/2000;
+
+        frontLeft.setPower(frontLeftPower);
+        frontRight.setPower(frontRightPower);
+        backLeft.setPower(backLeftPower);
+        backRight.setPower(backRightPower);
+    }
+
+    @Override
+    public void stop() {
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        backLeft.setPower(0);
+        backRight.setPower(0);
+    }
+
+    @Override
+    public PIDCalculator.PIDTuning getTurningTuning() {
+        return new PIDCalculator.PIDTuning(100, 0.0069, 0);
+    }
+
+    @Override
+    public PIDCalculator.PIDTuning getStraightTurning() {
+        return new PIDCalculator.PIDTuning(100, /* 2.0e-4 */ 0, 0);
+    }
+
+    @Override
+    public double getTurningAngleThreshold() {
+        return 1;
+    }
+
+    @Override
+    public Context getAppContext() {
+        return appContext;
+    }
+
+    @Override
+    public LinearOpMode getOpMode() {
+        return opMode;
+    }
+
+    @Override
+    public BNO055IMU getIMU() {
+        return imu;
     }
 }

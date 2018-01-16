@@ -1,6 +1,8 @@
-package org.firstinspires.ftc.teamcode.competition;
+package org.firstinspires.ftc.teamcode.competition.auto.full;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 
 @Autonomous(name = "Blue Front", group = "Final Auto")
 public class PulsarAutoBlueFront extends PulsarAuto {
