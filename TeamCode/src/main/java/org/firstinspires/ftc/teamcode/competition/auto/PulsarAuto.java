@@ -92,7 +92,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         waitForStart();
 
         targetColumn = vuforiaController.detectColumn();
-        telemetry.addData("column", targetColumn.toString());
+        telemetry.addData("col", targetColumn.toString());
 
         hw.jewelServo.setPosition(alliance.getJewelDownPosition(startPosition));
 
@@ -152,7 +152,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         turningPIDController.turn(scalar * alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
         if (targetColumn == RelicRecoveryVuMark.UNKNOWN) {
             targetColumn = vuforiaController.detectColumn();
-            telemetry.addData("column take 2", targetColumn.toString());
+            telemetry.addData("col take 2", targetColumn.toString());
             telemetry.update();
         }
         hw.jewelsUp();
