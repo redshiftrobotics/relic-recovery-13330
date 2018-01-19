@@ -1,3 +1,7 @@
+# Because Duncan doesn't use a real OS
+TeamCode/src/main/java/org/redshiftrobotics/lib
+TeamCode/src/test/java/org/redshiftrobotics/lib
+
 # built application files
 *.apk
 *.ap_
