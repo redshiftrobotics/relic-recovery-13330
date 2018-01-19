@@ -6,7 +6,9 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -45,6 +47,9 @@ public class PulsarRobotHardware implements RobotHardware {
     public final Servo intakeServoRight;
     public final DcMotor leftIntake;
     public final DcMotor rightIntake;
+
+    public final DistanceSensor frontODS;
+    public final DistanceSensor backODS;
 
     // Constants
     public final double LEFT_JEWEL_UP_POSITON = 0.35;
@@ -93,6 +98,8 @@ public class PulsarRobotHardware implements RobotHardware {
         intakeServoRight = hardwareMap.servo.get("collectorServoRight");
         leftIntake = hardwareMap.dcMotor.get("collectorLeft");
         rightIntake = hardwareMap.dcMotor.get("collectorRight");
+        frontODS = hardwareMap.get(DistanceSensor.class, "frontODS");
+        backODS = hardwareMap.get(DistanceSensor.class, "backODS");
     }
 
    public DcMotor getFrontLeft() {

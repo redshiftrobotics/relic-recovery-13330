@@ -145,6 +145,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         return targetJewelPosition;
     }
 
+    //TODO: refactor
     private void knockOffJewel(TargetJewelPosition targetJewelPosition) {
         if (targetJewelPosition == TargetJewelPosition.NONE) return;
         double scalar = targetJewelPosition == TargetJewelPosition.FRONT ? -1 : 1;
@@ -207,5 +208,9 @@ abstract public class PulsarAuto extends LinearOpMode {
         straightPIDController.moveStraight(1, 3 * Math.PI / 2, 2000);
         straightPIDController.moveStraight(1, Math.PI / 2, 200);
         hw.conveyor.setPower(0);
+    }
+
+    private void collectGlyph() {
+
     }
 }
