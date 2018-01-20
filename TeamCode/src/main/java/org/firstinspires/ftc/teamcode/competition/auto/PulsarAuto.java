@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.competition.auto;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
+import org.redshiftrobotics.lib.blockplacer.Col;
+import org.redshiftrobotics.lib.pid.ODSPIDController;
 import org.redshiftrobotics.lib.vuforia.VuforiaController;
 import org.redshiftrobotics.lib.pid.StraightPIDController;
 import org.redshiftrobotics.lib.pid.TurningPIDController;
@@ -72,6 +75,9 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected PulsarRobotHardware hw;
     protected StraightPIDController straightPIDController;
     protected TurningPIDController turningPIDController;
+    protected ODSPIDController odsControllerBack;
+    protected ODSPIDController odsControllerFront;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -85,6 +91,9 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         straightPIDController = new StraightPIDController(hw);
         turningPIDController = new TurningPIDController(hw);
+        //TODO: add in a real threshold...
+        odsControllerBack = new ODSPIDController(hw, hw.frontODS, 0, DistanceUnit.CM);
+        odsControllerFront = new ODSPIDController(hw, hw.backODS, 0, DistanceUnit.CM);
 
         telemetry.addLine("Ready");
         telemetry.update();
@@ -103,9 +112,8 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         knockOffJewel(detectJewel());
 
-        if (isSimpleAuto()) {
-            simpleAutoParkInSafeZone();
-        } else {
+        if (!isSimpleAuto()) {
+            //TODO: change method calls
             scoreInCryptobox(targetColumn);
         }
 
@@ -161,23 +169,8 @@ abstract public class PulsarAuto extends LinearOpMode {
         turningPIDController.turn(scalar * -alliance.getJewelKnockOffAngle(startPosition), 2000, 0.2);
     }
 
-    private void simpleAutoParkInSafeZone() {
-        if (!isSimpleAuto()) throw new IllegalStateException("Attempted to run simple auto in non-simple auto!");
-        double angle = 3 * Math.PI / 2;
-        if ((alliance == Alliance.RED && startPosition == StartPosition.FRONT) || (alliance == Alliance.BLUE && startPosition == StartPosition.BACK)) {
-            turningPIDController.turn(Math.PI / 5, 1600);
-        } else {
-            turningPIDController.turn(-Math.PI / 5, 1600);
-        }
 
-        hw.jewelsUp();
-
-        straightPIDController.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
-
-        telemetry.addLine("Simple auto only, exiting.");
-        telemetry.update();
-    }
-
+    /*
     private void scoreInCryptobox(RelicRecoveryVuMark column) throws InterruptedException {
         hw.jewelsUp();
         hw.conveyorDown();
@@ -208,9 +201,21 @@ abstract public class PulsarAuto extends LinearOpMode {
         straightPIDController.moveStraight(1, 3 * Math.PI / 2, 2000);
         straightPIDController.moveStraight(1, Math.PI / 2, 200);
         hw.conveyor.setPower(0);
-    }
+    }*/
 
     private void collectGlyph() {
-
+      //  straightPIDController.moveStraight();
     }
+
+    private void moveToGlyphPit() {}
+
+    private void alignWithColumn(Col col) {}
+
+    private void depositGlyph() {}
+
+    private void driveToCryptoBox() {}
+
+
+
+
 }
