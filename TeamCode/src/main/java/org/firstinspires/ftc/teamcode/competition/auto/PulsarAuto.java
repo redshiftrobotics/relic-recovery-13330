@@ -201,11 +201,11 @@ abstract public class PulsarAuto extends LinearOpMode {
         hw.intakeDown();
         turningPIDController.turn(alliance.getRotationToFaceCyptobox(startPosition), 3000);
         straightPIDController.moveStraight(0.7f, 3 * Math.PI / 2, 400, 100);
-        hw.conveyor.setPower(hw.CONVEYOR_SPEED);
+        hw.conveyorMotor.setPower(hw.CONVEYOR_SPEED);
         Thread.sleep(7500);
         straightPIDController.moveStraight(0.5f, Math.PI / 2, 2000);
         straightPIDController.moveStraight(1, 3 * Math.PI / 2, 2000);
         straightPIDController.moveStraight(1, Math.PI / 2, 200);
-        hw.conveyor.setPower(0);
+        hw.conveyorMotor.setPower(0);
     }
 }

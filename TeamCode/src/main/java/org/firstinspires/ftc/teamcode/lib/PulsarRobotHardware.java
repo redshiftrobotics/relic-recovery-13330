@@ -37,14 +37,14 @@ public class PulsarRobotHardware implements RobotHardware {
     public final ColorSensor rightJewelDetector;
     public final ColorSensor jewelDetector;
 
-    public final DcMotor conveyor;
-    public final Servo conveyorLiftLeft;
-    public final Servo conveyorLiftRight;
+    public final DcMotor conveyorMotor;
+    public final Servo leftFlipperServo;
+    public final Servo rightFlipperServo;
 
-    public final Servo intakeServoLeft;
-    public final Servo intakeServoRight;
-    public final DcMotor leftIntake;
-    public final DcMotor rightIntake;
+    public final Servo leftCollectionServo;
+    public final Servo rightCollectionServo;
+    public final DcMotor leftCollectionMotor;
+    public final DcMotor rightCollectionMotor;
 
     // Constants
     public final double LEFT_JEWEL_UP_POSITON = 0.35;
@@ -53,11 +53,11 @@ public class PulsarRobotHardware implements RobotHardware {
     public final double RIGHT_JEWEL_DOWN_POSITON = 0;
 
     public final double CONVEYOR_SPEED = 0.65;
-    public final double CONVEYOR_LIFT_UP_POSITION = 0.45;
-    public final double CONVEYOR_LIFT_DOWN_POSITON = 0.28;
+    public final double FLIPPER_UP_POSITION = 0.75;
+    public final double FLIPPER_DOWN_POSITION = 0.0;
 
-    public final double INTAKE_UP_POSITION = 1;
-    public final double INTAKE_DOWN_POSITION = 0;
+    public final double COLLECTION_UP_POSITION = 1;
+    public final double COLLECTION_DOWN_POSITION = 0;
 
 
     public PulsarRobotHardware(LinearOpMode opMode, PulsarAuto.Alliance alliance) {
@@ -67,36 +67,33 @@ public class PulsarRobotHardware implements RobotHardware {
         hardwareMap = opMode.hardwareMap;
         appContext = opMode.hardwareMap.appContext;
 
-        frontLeft = getFrontLeft();
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        backLeft = hardwareMap.dcMotor.get("backLeft");
-        backRight = hardwareMap.dcMotor.get("backRight");
+        frontLeft = hardwareMap.dcMotor.get("r1m0");
+        frontRight = hardwareMap.dcMotor.get("r1m1");
+        backLeft = hardwareMap.dcMotor.get("r1m2");
+        backRight = hardwareMap.dcMotor.get("r1m3");
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         initalizeIMU(imu);
 
-        leftJewelServo = hardwareMap.servo.get("leftJewel");
-        rightJewelServo = hardwareMap.servo.get("rightJewel");
-        //jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
-        jewelServo = leftJewelServo;
-        leftJewelDetector = hardwareMap.colorSensor.get("leftCS");
-        //rightJewelDetector = hardwareMap.colorSensor.get("rightCS");
-        rightJewelDetector = leftJewelDetector;
-        jewelDetector = leftJewelDetector;
-        //jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
+        leftJewelServo = hardwareMap.servo.get("r1s3");
+        rightJewelServo = hardwareMap.servo.get("r1s2");
+        jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
+        //jewelServo = leftJewelServo;
 
-        conveyor = hardwareMap.dcMotor.get("conveyor");
-        conveyorLiftLeft = hardwareMap.servo.get("conveyorLiftLeft");
-        conveyorLiftRight = hardwareMap.servo.get("conveyorLiftRight");
+        leftJewelDetector = hardwareMap.colorSensor.get("r1c1");
+        rightJewelDetector = hardwareMap.colorSensor.get("r1c2");
+        //rightJewelDetector = leftJewelDetector;
+        //jewelDetector = leftJewelDetector;
+        jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
-        intakeServoLeft = hardwareMap.servo.get("collectorServoLeft");
-        intakeServoRight = hardwareMap.servo.get("collectorServoRight");
-        leftIntake = hardwareMap.dcMotor.get("collectorLeft");
-        rightIntake = hardwareMap.dcMotor.get("collectorRight");
-    }
+        conveyorMotor = hardwareMap.dcMotor.get("r2m1");
+        leftFlipperServo = hardwareMap.servo.get("r2s1");
+        rightFlipperServo = hardwareMap.servo.get("r2s0");
 
-   public DcMotor getFrontLeft() {
-        return hardwareMap.dcMotor.get("frontLeft");
+        leftCollectionServo = hardwareMap.servo.get("r1s1");
+        rightCollectionServo = hardwareMap.servo.get("r1s0");
+        leftCollectionMotor = hardwareMap.dcMotor.get("r2m2");
+        rightCollectionMotor = hardwareMap.dcMotor.get("r2m3");
     }
 
     private void initalizeIMU(BNO055IMU imu) {
@@ -111,14 +108,14 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void initializePositions(Telemetry tm) {
-        intakeServoRight.setDirection(Servo.Direction.REVERSE);
+        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
         leftJewelServo.setDirection(Servo.Direction.REVERSE);
         rightJewelServo.setDirection(Servo.Direction.REVERSE);
 
         /*
             Previous Values (Maybe Better?):
-            intakeServoLeft.setPosition(0.8);
-            intakeServoRight.setPosition(0.85);
+            leftCollectionServo.setPosition(0.8);
+            rightCollectionServo.setPosition(0.85);
         */
 
         intakeUp();
@@ -130,7 +127,7 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void initializePositionsTeleop() {
-        intakeServoRight.setDirection(Servo.Direction.REVERSE);
+        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
         leftJewelServo.setDirection(Servo.Direction.REVERSE);
         rightJewelServo.setDirection(Servo.Direction.REVERSE);
 
@@ -143,29 +140,29 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void conveyorUp() {
-        conveyorLiftLeft.setPosition(CONVEYOR_LIFT_UP_POSITION);
-        conveyorLiftRight.setPosition(CONVEYOR_LIFT_UP_POSITION);
+        leftFlipperServo.setPosition(FLIPPER_UP_POSITION);
+        rightFlipperServo.setPosition(FLIPPER_UP_POSITION);
     }
 
     public void conveyorDown() {
-        conveyorLiftLeft.setPosition(CONVEYOR_LIFT_DOWN_POSITON);
-        conveyorLiftRight.setPosition(CONVEYOR_LIFT_DOWN_POSITON);
+        leftFlipperServo.setPosition(FLIPPER_DOWN_POSITION);
+        rightFlipperServo.setPosition(FLIPPER_DOWN_POSITION);
     }
 
     public void intakeUp() {
-        intakeServoLeft.setPosition(INTAKE_UP_POSITION);
-        intakeServoRight.setPosition(INTAKE_UP_POSITION);
+        leftCollectionServo.setPosition(COLLECTION_UP_POSITION);
+        rightCollectionServo.setPosition(COLLECTION_UP_POSITION);
     }
 
     public void intakeDown() {
-        intakeServoLeft.setPosition(INTAKE_DOWN_POSITION);
-        intakeServoRight.setPosition(INTAKE_DOWN_POSITION);
+        leftCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
+        rightCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
     }
 
     public void intakeHalf() {
-        double pos = (INTAKE_DOWN_POSITION + INTAKE_UP_POSITION) / 2;
-        intakeServoLeft.setPosition(pos);
-        intakeServoRight.setPosition(pos);
+        double pos = (COLLECTION_DOWN_POSITION + COLLECTION_UP_POSITION) / 2;
+        leftCollectionServo.setPosition(pos);
+        rightCollectionServo.setPosition(pos);
     }
 
     /*
