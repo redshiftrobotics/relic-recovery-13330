@@ -16,13 +16,13 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 @TeleOp(name="Pulsar State Teleop", group="Pulsar")
 public class PulsarStateTeleop extends LinearOpMode {
 
-    private static final boolean USE_PID = true;
+    private static final boolean USE_PID = false;
 
     private PulsarRobotHardware hw;
 
     private IMU imu;
 
-    private static final double DRIVE_POWER_SCALAR = 0;
+    private static final double DRIVE_POWER_SCALAR = 1;
     private static final double COLLECTOR_POWER_SCALAR = 0.5;
     private static final double CONVEYOR_POWER = 0.5f;
 
@@ -36,7 +36,7 @@ public class PulsarStateTeleop extends LinearOpMode {
     private double targetAngle = 180;
     private double currentAngle = 180;
     private double lastAngle = 180;
-    private double pConstant = 5;
+    private double pConstant = 0;
 
     private boolean isTurning = false;
     private boolean flipperUp = false;
@@ -80,6 +80,7 @@ public class PulsarStateTeleop extends LinearOpMode {
             //Update all hardware based on user input, these must be called last
             UpdateMotors();
             UpdateServos();
+            telemetry.update();
         }
     }
 
@@ -89,6 +90,8 @@ public class PulsarStateTeleop extends LinearOpMode {
         hw.frontRight.setPower(frPower);
         hw.backLeft.setPower(blPower);
         hw.backRight.setPower(brPower);
+
+
 
         //Update collector motors
         hw.leftCollectionMotor.setPower(collectorLeft);
@@ -103,16 +106,16 @@ public class PulsarStateTeleop extends LinearOpMode {
     private void UpdateServos(){
         if(flipperUp){
             hw.leftFlipperServo.setPosition(hw.FLIPPER_UP_POSITION);
-            hw.leftFlipperServo.setPosition(hw.FLIPPER_UP_POSITION);
+            hw.rightFlipperServo.setPosition(hw.FLIPPER_UP_POSITION);
         }else{
-            hw.leftFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
+            hw.rightFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
             hw.leftFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
         }
     }
 
     private void ReadDriverControls(Gamepad driver){
         xDrivePower = driver.right_stick_x * DRIVE_POWER_SCALAR;
-        yDrivePower = -driver.left_stick_y * DRIVE_POWER_SCALAR;
+        yDrivePower = -driver.right_stick_y * DRIVE_POWER_SCALAR;
         anglePower = driver.left_stick_x * DRIVE_POWER_SCALAR;
     }
 
@@ -129,26 +132,30 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ComputePLoop() { //Function to control the robot's movements, this includes calculating P and calculating the motor powers
-        lastAngle = currentAngle;
-        currentAngle = imu.getAngularRotationX();
+        if(USE_PID) {
+            lastAngle = currentAngle;
+            currentAngle = imu.getAngularRotationX();
 
-        if (anglePower != 0) isTurning = true;
-        if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;
+            if (anglePower != 0) isTurning = true;
+            if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;
 
-        if (isTurning) {
-            targetAngle = currentAngle;
-            pPower = 0.0;
-        } else {
-            if (currentAngle + 360.0 - targetAngle <= 180.0) {
-                pPower = (currentAngle - targetAngle + 360.0) * pConstant;
-            } else if (targetAngle + 360.0 - currentAngle <= 180.0) {
-                pPower = (targetAngle - currentAngle + 360.0) * -1.0 * pConstant;
-            } else if (currentAngle - targetAngle <= 180.0) {
-                pPower = (currentAngle - targetAngle) * pConstant;
+            if (isTurning) {
+                targetAngle = currentAngle;
+                pPower = 0.0;
+            } else {
+                if (currentAngle + 360.0 - targetAngle <= 180.0) {
+                    pPower = (currentAngle - targetAngle + 360.0) * pConstant;
+                } else if (targetAngle + 360.0 - currentAngle <= 180.0) {
+                    pPower = (targetAngle - currentAngle + 360.0) * -1.0 * pConstant;
+                } else if (currentAngle - targetAngle <= 180.0) {
+                    pPower = (currentAngle - targetAngle) * pConstant;
+                }
             }
+
+            pPower = Range.clip(pPower / -180.0, -1.0, 1.0);
         }
 
-        pPower = Range.clip(pPower / -180.0, -1.0, 1.0);
+        telemetry.addData("Movement", "(" + xDrivePower + ", " + yDrivePower + ")");
 
         flPower = yDrivePower - xDrivePower + pPower + anglePower;
         frPower = yDrivePower + xDrivePower - pPower - anglePower;

@@ -6,6 +6,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -72,6 +73,11 @@ public class PulsarRobotHardware implements RobotHardware {
         backLeft = hardwareMap.dcMotor.get("r1m2");
         backRight = hardwareMap.dcMotor.get("r1m3");
 
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         initalizeIMU(imu);
 
@@ -89,6 +95,7 @@ public class PulsarRobotHardware implements RobotHardware {
         conveyorMotor = hardwareMap.dcMotor.get("r2m1");
         leftFlipperServo = hardwareMap.servo.get("r2s1");
         rightFlipperServo = hardwareMap.servo.get("r2s0");
+        //rightJewelServo.setDirection(Servo.Direction.REVERSE);
 
         leftCollectionServo = hardwareMap.servo.get("r1s1");
         rightCollectionServo = hardwareMap.servo.get("r1s0");

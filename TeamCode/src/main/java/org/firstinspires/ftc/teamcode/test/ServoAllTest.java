@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.util.List;
+
 /**
  * Created by Duncan on 1/20/2018.
  */
@@ -12,16 +14,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "Duncan's dumb test")
 public class ServoAllTest extends LinearOpMode{
 
+    List<Servo> servos;
+    int index = 0;
+
     @Override
     public void runOpMode() throws InterruptedException {
+        servos = hardwareMap.getAll(Servo.class);
         waitForStart();
         while(opModeIsActive()){
-            hardwareMap
-                    .getAll(DcMotor.class)
-                    .get( Math.round((gamepad1.left_stick_y+1)*hardwareMap
-                            .getAll(DcMotor.class)
-                            .size()/2))
-                    .setPower(gamepad1.right_stick_y);
+
         }
     }
 }
