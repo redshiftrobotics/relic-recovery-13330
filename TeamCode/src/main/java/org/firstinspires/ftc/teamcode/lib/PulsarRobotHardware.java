@@ -48,10 +48,10 @@ public class PulsarRobotHardware implements RobotHardware {
     public final DcMotor rightCollectionMotor;
 
     // Constants
-    public final double LEFT_JEWEL_UP_POSITON = 0.35;
+    public final double LEFT_JEWEL_UP_POSITON = 0.6;
     public final double LEFT_JEWEL_DOWN_POSITON = 0;
-    public final double RIGHT_JEWEL_UP_POSITON = 0.8;
-    public final double RIGHT_JEWEL_DOWN_POSITON = 0;
+    public final double RIGHT_JEWEL_UP_POSITON = 0.5;
+    public final double RIGHT_JEWEL_DOWN_POSITON = 0.8;
 
     public final double CONVEYOR_SPEED = 0.65;
     public final double FLIPPER_UP_POSITION = 0.75;
@@ -94,13 +94,14 @@ public class PulsarRobotHardware implements RobotHardware {
 
         conveyorMotor = hardwareMap.dcMotor.get("r2m1");
         leftFlipperServo = hardwareMap.servo.get("r2s1");
-        rightFlipperServo = hardwareMap.servo.get("r2s0");
-        //rightJewelServo.setDirection(Servo.Direction.REVERSE);
+        rightFlipperServo = hardwareMap.servo.get("r2s2");
+        leftFlipperServo.setDirection(Servo.Direction.REVERSE);
 
         leftCollectionServo = hardwareMap.servo.get("r1s1");
         rightCollectionServo = hardwareMap.servo.get("r1s0");
         leftCollectionMotor = hardwareMap.dcMotor.get("r2m2");
         rightCollectionMotor = hardwareMap.dcMotor.get("r2m3");
+        leftCollectionServo.setDirection(Servo.Direction.REVERSE);
     }
 
     private void initalizeIMU(BNO055IMU imu) {

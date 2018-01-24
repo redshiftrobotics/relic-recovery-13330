@@ -23,7 +23,8 @@ public class PulsarStateTeleop extends LinearOpMode {
     private IMU imu;
 
     private static final double DRIVE_POWER_SCALAR = 1;
-    private static final double COLLECTOR_POWER_SCALAR = 0.5;
+    private static final double COLLECTOR_POWER_SCALAR_X = .2;
+    private static final double COLLECTOR_POWER_SCALAR_Y = 1;
     private static final double CONVEYOR_POWER = 0.5f;
 
     private double xDrivePower = 0;
@@ -41,6 +42,7 @@ public class PulsarStateTeleop extends LinearOpMode {
     private boolean isTurning = false;
     private boolean flipperUp = false;
     private boolean conveyorOn = true;
+    private boolean collectionUp = false;
 
     //Drive motor power
     private double flPower = 0;
@@ -111,6 +113,18 @@ public class PulsarStateTeleop extends LinearOpMode {
             hw.rightFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
             hw.leftFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
         }
+
+
+        if (!collectionUp) {
+            hw.leftCollectionServo.setPosition(hw.COLLECTION_UP_POSITION);
+            hw.rightCollectionServo.setPosition(hw.COLLECTION_UP_POSITION);
+        } else {
+            hw.leftCollectionServo.setPosition(hw.COLLECTION_DOWN_POSITION);
+            hw.rightCollectionServo.setPosition(hw.COLLECTION_DOWN_POSITION);
+        }
+        telemetry.addData("collection", collectionUp);
+        telemetry.addData("collservo L", hw.leftCollectionServo.getPosition());
+        telemetry.addData("collservo R", hw.rightCollectionServo.getPosition());
     }
 
     private void ReadDriverControls(Gamepad driver){
@@ -120,10 +134,11 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ReadOperatorControls(Gamepad operator){
-        xCollectionPower = operator.right_stick_x * COLLECTOR_POWER_SCALAR;
-        yCollectionPower = -operator.right_stick_y * COLLECTOR_POWER_SCALAR;
+        xCollectionPower = operator.dpad_right ? operator.right_stick_x * COLLECTOR_POWER_SCALAR_X : 0;
+        yCollectionPower = -operator.right_stick_y * COLLECTOR_POWER_SCALAR_Y;
         flipperUp = operator.a;
         conveyorOn = !operator.b;
+        collectionUp = operator.y;
     }
 
     private void CalculateCollection(){
