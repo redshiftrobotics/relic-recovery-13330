@@ -25,7 +25,7 @@ public class PulsarStateTeleop extends LinearOpMode {
     private static final double DRIVE_POWER_SCALAR = 1;
     private static final double COLLECTOR_POWER_SCALAR_X = .2;
     private static final double COLLECTOR_POWER_SCALAR_Y = 1;
-    private static final double CONVEYOR_POWER = 0.5f;
+    private static final double CONVEYOR_POWER = 0.8f;
 
     private double xDrivePower = 0;
     private double yDrivePower = 0;
@@ -40,9 +40,13 @@ public class PulsarStateTeleop extends LinearOpMode {
     private double pConstant = 0;
 
     private boolean isTurning = false;
-    private boolean flipperUp = false;
-    private boolean conveyorOn = true;
+    private boolean conveyorForward = true;
     private boolean collectionUp = false;
+    private boolean maxConveyorPower = false;
+
+    private double flipperPosition = 0;
+    private double movementScalar = 0;
+    private double rotationScalar = 0;
 
     //Drive motor power
     private double flPower = 0;
@@ -64,7 +68,6 @@ public class PulsarStateTeleop extends LinearOpMode {
         imu = new IMUWrapper(hw.imu);
 
         hw.initializePositionsTeleop();
-        hw.conveyorDown();
 
         telemetry.addLine("Ready for TeleOp!");
         telemetry.addLine();
@@ -98,22 +101,20 @@ public class PulsarStateTeleop extends LinearOpMode {
         //Update collector motors
         hw.leftCollectionMotor.setPower(collectorLeft);
         hw.rightCollectionMotor.setPower(collectorRight);
-        if(conveyorOn) hw.conveyorMotor.setPower(CONVEYOR_POWER);
-        else hw.conveyorMotor.setPower(-CONVEYOR_POWER);
+
+        double rawConveyorSpeed = maxConveyorPower ? 1 : CONVEYOR_POWER;
+        if(conveyorForward) hw.conveyorMotor.setPower(rawConveyorSpeed);
+        else hw.conveyorMotor.setPower(-rawConveyorSpeed);
 
         //Update relic motors
         //hw.relic.setPower(relicPower);
     }
 
     private void UpdateServos(){
-        if(flipperUp){
-            hw.leftFlipperServo.setPosition(hw.FLIPPER_UP_POSITION);
-            hw.rightFlipperServo.setPosition(hw.FLIPPER_UP_POSITION);
-        }else{
-            hw.rightFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
-            hw.leftFlipperServo.setPosition(hw.FLIPPER_DOWN_POSITION);
-        }
-
+        double realFlipperPosition = hw.FLIPPER_POSITION_SCALAR * flipperPosition;
+        if(realFlipperPosition<0.05) realFlipperPosition = 0.05;
+        hw.leftFlipperServo.setPosition(realFlipperPosition);
+        hw.rightFlipperServo.setPosition(realFlipperPosition);
 
         if (!collectionUp) {
             hw.leftCollectionServo.setPosition(hw.COLLECTION_UP_POSITION);
@@ -128,17 +129,24 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ReadDriverControls(Gamepad driver){
-        xDrivePower = driver.right_stick_x * DRIVE_POWER_SCALAR;
+        xDrivePower = -driver.right_stick_x * DRIVE_POWER_SCALAR;
         yDrivePower = -driver.right_stick_y * DRIVE_POWER_SCALAR;
         anglePower = driver.left_stick_x * DRIVE_POWER_SCALAR;
+        movementScalar = 1 - driver.right_trigger;
+        if(movementScalar < 0.1) movementScalar = 0.1;
+        rotationScalar = 1 - driver.left_trigger;
+        if(rotationScalar < 0.1) rotationScalar = 0.1;
+
+        telemetry.addData(movementScalar + "", rotationScalar);
     }
 
     private void ReadOperatorControls(Gamepad operator){
         xCollectionPower = operator.dpad_right ? operator.right_stick_x * COLLECTOR_POWER_SCALAR_X : 0;
         yCollectionPower = -operator.right_stick_y * COLLECTOR_POWER_SCALAR_Y;
-        flipperUp = operator.a;
-        conveyorOn = !operator.b;
+        conveyorForward = !operator.b;
         collectionUp = operator.y;
+        maxConveyorPower = operator.a;
+        flipperPosition = operator.left_trigger;
     }
 
     private void CalculateCollection(){
@@ -172,10 +180,10 @@ public class PulsarStateTeleop extends LinearOpMode {
 
         telemetry.addData("Movement", "(" + xDrivePower + ", " + yDrivePower + ")");
 
-        flPower = yDrivePower - xDrivePower + pPower + anglePower;
-        frPower = yDrivePower + xDrivePower - pPower - anglePower;
-        blPower = yDrivePower + xDrivePower + pPower + anglePower;
-        brPower = yDrivePower - xDrivePower - pPower - anglePower;
+        flPower = (yDrivePower - xDrivePower) * movementScalar + (pPower + anglePower) * rotationScalar;
+        frPower = (yDrivePower + xDrivePower) * movementScalar - (pPower + anglePower) * rotationScalar;
+        blPower = (yDrivePower + xDrivePower) * movementScalar + (pPower + anglePower) * rotationScalar;
+        brPower = (yDrivePower - xDrivePower) * movementScalar - (pPower + anglePower) * rotationScalar;
     }
 
     private void NormalizeMotorPowers() {

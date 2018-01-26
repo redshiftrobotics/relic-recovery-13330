@@ -49,7 +49,6 @@ public class PulsarTeleop extends LinearOpMode {
         imu = new IMUWrapper(hw.imu);
 
         hw.initializePositionsTeleop();
-        hw.conveyorDown();
 
         telemetry.addLine("Ready for TeleOp!");
         telemetry.addLine();

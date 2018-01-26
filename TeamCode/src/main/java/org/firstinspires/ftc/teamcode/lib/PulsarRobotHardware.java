@@ -54,8 +54,7 @@ public class PulsarRobotHardware implements RobotHardware {
     public final double RIGHT_JEWEL_DOWN_POSITON = 0.8;
 
     public final double CONVEYOR_SPEED = 0.65;
-    public final double FLIPPER_UP_POSITION = 0.75;
-    public final double FLIPPER_DOWN_POSITION = 0.0;
+    public final double FLIPPER_POSITION_SCALAR = 0.75;
 
     public final double COLLECTION_UP_POSITION = 1;
     public final double COLLECTION_DOWN_POSITION = 0;
@@ -73,9 +72,10 @@ public class PulsarRobotHardware implements RobotHardware {
         backLeft = hardwareMap.dcMotor.get("r1m2");
         backRight = hardwareMap.dcMotor.get("r1m3");
 
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        //frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -127,7 +127,6 @@ public class PulsarRobotHardware implements RobotHardware {
         */
 
         intakeUp();
-        conveyorUp();
         jewelsUp();
 
         tm.addLine("Servo Positions: initialized");
@@ -145,16 +144,6 @@ public class PulsarRobotHardware implements RobotHardware {
     public void jewelsUp() {
         leftJewelServo.setPosition(LEFT_JEWEL_UP_POSITON);
         rightJewelServo.setPosition(RIGHT_JEWEL_UP_POSITON);
-    }
-
-    public void conveyorUp() {
-        leftFlipperServo.setPosition(FLIPPER_UP_POSITION);
-        rightFlipperServo.setPosition(FLIPPER_UP_POSITION);
-    }
-
-    public void conveyorDown() {
-        leftFlipperServo.setPosition(FLIPPER_DOWN_POSITION);
-        rightFlipperServo.setPosition(FLIPPER_DOWN_POSITION);
     }
 
     public void intakeUp() {

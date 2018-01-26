@@ -179,7 +179,6 @@ abstract public class PulsarAuto extends LinearOpMode {
 
     private void scoreInCryptobox(RelicRecoveryVuMark column) throws InterruptedException {
         hw.jewelsUp();
-        hw.conveyorDown();
         Thread.sleep(200);
         // robot.moveStraightMillis(1, 3 * Math.PI / 2, 1650);
         long baseMoveValue = alliance == Alliance.BLUE ? 2800 : 3800; // 2450 : 3800
