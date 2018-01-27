@@ -17,6 +17,7 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 public class PulsarStateTeleop extends LinearOpMode {
 
     private static final boolean USE_PID = false;
+    private final double FLIPPER_MIN_POSITION = 0.01;
 
     private PulsarRobotHardware hw;
 
@@ -112,7 +113,7 @@ public class PulsarStateTeleop extends LinearOpMode {
 
     private void UpdateServos(){
         double realFlipperPosition = hw.FLIPPER_POSITION_SCALAR * flipperPosition;
-        if(realFlipperPosition<0.05) realFlipperPosition = 0.05;
+        if(realFlipperPosition< FLIPPER_MIN_POSITION) realFlipperPosition = FLIPPER_MIN_POSITION;
         hw.leftFlipperServo.setPosition(realFlipperPosition);
         hw.rightFlipperServo.setPosition(realFlipperPosition);
 
@@ -126,6 +127,8 @@ public class PulsarStateTeleop extends LinearOpMode {
         telemetry.addData("collection", collectionUp);
         telemetry.addData("collservo L", hw.leftCollectionServo.getPosition());
         telemetry.addData("collservo R", hw.rightCollectionServo.getPosition());
+
+        hw.jewelsUp();
     }
 
     private void ReadDriverControls(Gamepad driver){
