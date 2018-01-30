@@ -24,14 +24,12 @@ public class PulsarStateTeleop extends LinearOpMode {
     private IMU imu;
 
     private static final double DRIVE_POWER_SCALAR = 1;
-    private static final double COLLECTOR_POWER_SCALAR_X = .2;
-    private static final double COLLECTOR_POWER_SCALAR_Y = 1;
+    private static final double COLLECTOR_POWER_LEFT_SCALAR = 1;
+    private static final double COLLECTOR_POWER_RIGHT_SCALAR = 1;
     private static final double CONVEYOR_POWER = 0.8f;
 
     private double xDrivePower = 0;
     private double yDrivePower = 0;
-    private double xCollectionPower = 0;
-    private double yCollectionPower = 0;
 
     private double pPower = 0;
     private double anglePower = 0;
@@ -81,7 +79,6 @@ public class PulsarStateTeleop extends LinearOpMode {
             ReadDriverControls(gamepad1);
             ReadOperatorControls(gamepad2);
             ComputePLoop();
-            CalculateCollection();
             NormalizeMotorPowers();
             //Update all hardware based on user input, these must be called last
             UpdateMotors();
@@ -144,17 +141,12 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ReadOperatorControls(Gamepad operator){
-        xCollectionPower = operator.dpad_right ? operator.right_stick_x * COLLECTOR_POWER_SCALAR_X : 0;
-        yCollectionPower = -operator.right_stick_y * COLLECTOR_POWER_SCALAR_Y;
+        collectorLeft = -1 * operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
+        collectorRight = -1 * operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
         conveyorForward = !operator.b;
         collectionUp = operator.y;
         maxConveyorPower = operator.a;
         flipperPosition = operator.left_trigger;
-    }
-
-    private void CalculateCollection(){
-        collectorLeft = yCollectionPower - xCollectionPower;
-        collectorRight = yCollectionPower + xCollectionPower;
     }
 
     private void ComputePLoop() { //Function to control the robot's movements, this includes calculating P and calculating the motor powers
