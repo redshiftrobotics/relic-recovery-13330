@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 import org.redshiftrobotics.lib.RobotHardware;
+import org.redshiftrobotics.lib.debug.DebugHelper;
 import org.redshiftrobotics.lib.pid.PIDCalculator;
 
 public class PulsarRobotHardware implements RobotHardware {
@@ -63,6 +64,8 @@ public class PulsarRobotHardware implements RobotHardware {
     public PulsarRobotHardware(LinearOpMode opMode, PulsarAuto.Alliance alliance) {
         this.alliance = alliance;
         this.opMode = opMode;
+
+        DebugHelper.setTelemetry(opMode.telemetry);
 
         hardwareMap = opMode.hardwareMap;
         appContext = opMode.hardwareMap.appContext;
@@ -178,10 +181,10 @@ public class PulsarRobotHardware implements RobotHardware {
          */
 
         // FIXME: dividing all corrections by 2000 to prevent overflow is bad
-        double frontLeftPower = velocityY  - velocityX  - correctionAngular/2000;
-        double frontRightPower = velocityY + velocityX  + correctionAngular/2000;
-        double backRightPower = velocityY - velocityX + correctionAngular/2000;
-        double backLeftPower = velocityY + velocityX - correctionAngular/2000;
+        double frontLeftPower = velocityY  - velocityX  + correctionAngular/2000.0;
+        double frontRightPower = velocityY + velocityX  - correctionAngular/2000.0;
+        double backRightPower = velocityY - velocityX - correctionAngular/2000.0;
+        double backLeftPower = velocityY + velocityX + correctionAngular/2000.0;
 
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
