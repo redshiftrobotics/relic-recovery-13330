@@ -202,12 +202,17 @@ public class PulsarRobotHardware implements RobotHardware {
 
     @Override
     public PIDCalculator.PIDTuning getTurningTuning() {
-        return new PIDCalculator.PIDTuning(200, 0.0069, 0);
+        return new PIDCalculator.PIDTuning(200, 0, 0);
     }
 
     @Override
     public PIDCalculator.PIDTuning getStraightTurning() {
-        return new PIDCalculator.PIDTuning(200, /* 2.0e-4 */ 0, 0);
+        return new PIDCalculator.PIDTuning(200, 0, 0);
+    }
+
+    @Override
+    public PIDCalculator.PIDTuning getStrafeTuning() {
+        return this.getStraightTurning();
     }
 
     @Override
@@ -228,5 +233,10 @@ public class PulsarRobotHardware implements RobotHardware {
     @Override
     public BNO055IMU getIMU() {
         return imu;
+    }
+
+    @Override
+    public boolean getCanStrafe() {
+        return true;
     }
 }

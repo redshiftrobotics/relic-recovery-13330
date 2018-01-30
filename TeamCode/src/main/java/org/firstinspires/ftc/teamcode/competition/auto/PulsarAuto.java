@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 import org.redshiftrobotics.lib.vuforia.VuforiaController;
-import org.redshiftrobotics.lib.pid.StraightPIDController;
+import org.redshiftrobotics.lib.pid.ForwardPIDController;
 import org.redshiftrobotics.lib.pid.TurningPIDController;
 
 
@@ -70,7 +70,7 @@ abstract public class PulsarAuto extends LinearOpMode {
     private RelicRecoveryVuMark targetColumn;
     private VuforiaController vuforiaController;
     protected PulsarRobotHardware hw;
-    protected StraightPIDController straightPIDController;
+    protected ForwardPIDController forwardPIDController;
     protected TurningPIDController turningPIDController;
 
     @Override
@@ -83,7 +83,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         vuforiaController = new VuforiaController(hw);
 
-        straightPIDController = new StraightPIDController(hw);
+        forwardPIDController = new ForwardPIDController(hw);
         turningPIDController = new TurningPIDController(hw);
 
         telemetry.addLine("Ready");
@@ -171,7 +171,7 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         hw.jewelsUp();
 
-        straightPIDController.moveStraight(1, angle, 1500, alliance.getDistanceToClearStone(startPosition));
+        forwardPIDController.move(1, 1500, alliance.getDistanceToClearStone(startPosition));
 
         telemetry.addLine("Simple auto only, exiting.");
         telemetry.update();
@@ -193,18 +193,18 @@ abstract public class PulsarAuto extends LinearOpMode {
                 baseMoveValue += 900;
                 break;
         }
-        straightPIDController.moveStraight(0.7f, alliance == Alliance.BLUE ? 3*Math.PI/2 : Math.PI/2, baseMoveValue);
+        forwardPIDController.move(0.7f, alliance == Alliance.BLUE ? 3*Math.PI/2 : Math.PI/2, baseMoveValue);
 
         hw.initializePositionsTeleop();
 
         hw.intakeDown();
         turningPIDController.turn(alliance.getRotationToFaceCyptobox(startPosition), 3000);
-        straightPIDController.moveStraight(0.7f, 3 * Math.PI / 2, 400, 100);
+        forwardPIDController.move(0.7f, 400, 100);
         hw.conveyorMotor.setPower(hw.CONVEYOR_SPEED);
         Thread.sleep(7500);
-        straightPIDController.moveStraight(0.5f, Math.PI / 2, 2000);
-        straightPIDController.moveStraight(1, 3 * Math.PI / 2, 2000);
-        straightPIDController.moveStraight(1, Math.PI / 2, 200);
+        forwardPIDController.move(0.5f, Math.PI / 2, 2000);
+        forwardPIDController.move(1, 3 * Math.PI / 2, 2000);
+        forwardPIDController.move(1, Math.PI / 2, 200);
         hw.conveyorMotor.setPower(0);
     }
 }
