@@ -202,12 +202,12 @@ public class PulsarRobotHardware implements RobotHardware {
 
     @Override
     public PIDCalculator.PIDTuning getTurningTuning() {
-        return new PIDCalculator.PIDTuning(100, 0.0069, 0);
+        return new PIDCalculator.PIDTuning(200, 0.0069, 0);
     }
 
     @Override
     public PIDCalculator.PIDTuning getStraightTurning() {
-        return new PIDCalculator.PIDTuning(100, /* 2.0e-4 */ 0, 0);
+        return new PIDCalculator.PIDTuning(200, /* 2.0e-4 */ 0, 0);
     }
 
     @Override
