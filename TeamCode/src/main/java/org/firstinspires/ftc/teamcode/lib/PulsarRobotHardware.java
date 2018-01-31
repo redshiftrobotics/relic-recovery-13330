@@ -21,6 +21,7 @@ public class PulsarRobotHardware implements RobotHardware {
 
     public final LinearOpMode opMode;
     public final Context appContext;
+    public final Telemetry telemetry;
 
     private final HardwareMap hardwareMap;
 
@@ -48,24 +49,33 @@ public class PulsarRobotHardware implements RobotHardware {
     public final DcMotor leftCollectionMotor;
     public final DcMotor rightCollectionMotor;
 
+    public final DcMotor relicMotor;
+
     // Constants
     public final double LEFT_JEWEL_UP_POSITON = 0.6;
     public final double LEFT_JEWEL_DOWN_POSITON = 0;
+    public final double LEFT_JEWEL_ALT_DOWN_POSITON = 0.05;
     public final double RIGHT_JEWEL_UP_POSITON = 0.5;
     public final double RIGHT_JEWEL_DOWN_POSITON = 0.8;
+    public final double RIGHT_JEWEL_ALT_DOWN_POSITON = 0.75;
 
     public final double CONVEYOR_SPEED = 0.65;
-    public final double FLIPPER_POSITION_SCALAR = 0.75;
+    public final double FLIPPER_POSITION_SCALAR = 0.8;
+    public final double FLIPPER_MIN_POSITION = 0.01;
 
     public final double COLLECTION_UP_POSITION = 1;
     public final double COLLECTION_DOWN_POSITION = 0;
+
+    // FIXME: dividing all corrections by 2000 to prevent overflow is bad
+    public final double CORRECTION_SCALAR = 1.0 / 2000.0;
 
 
     public PulsarRobotHardware(LinearOpMode opMode, PulsarAuto.Alliance alliance) {
         this.alliance = alliance;
         this.opMode = opMode;
 
-        DebugHelper.setTelemetry(opMode.telemetry);
+        telemetry = opMode.telemetry;
+        DebugHelper.setTelemetry(telemetry);
 
         hardwareMap = opMode.hardwareMap;
         appContext = opMode.hardwareMap.appContext;
@@ -75,11 +85,8 @@ public class PulsarRobotHardware implements RobotHardware {
         backLeft = hardwareMap.dcMotor.get("r1m2");
         backRight = hardwareMap.dcMotor.get("r1m3");
 
+        // XXX: Why only backRight?
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        //frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        //frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        //backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         initalizeIMU(imu);
@@ -87,12 +94,11 @@ public class PulsarRobotHardware implements RobotHardware {
         leftJewelServo = hardwareMap.servo.get("r1s3");
         rightJewelServo = hardwareMap.servo.get("r1s2");
         jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
-        //jewelServo = leftJewelServo;
 
         leftJewelDetector = hardwareMap.colorSensor.get("r1c1");
         rightJewelDetector = hardwareMap.colorSensor.get("r1c2");
-        //rightJewelDetector = leftJewelDetector;
-        //jewelDetector = leftJewelDetector;
+        leftJewelServo.setDirection(Servo.Direction.REVERSE);
+        rightJewelServo.setDirection(Servo.Direction.REVERSE);
         jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
 
         conveyorMotor = hardwareMap.dcMotor.get("r2m1");
@@ -104,7 +110,10 @@ public class PulsarRobotHardware implements RobotHardware {
         rightCollectionServo = hardwareMap.servo.get("r1s0");
         leftCollectionMotor = hardwareMap.dcMotor.get("r2m2");
         rightCollectionMotor = hardwareMap.dcMotor.get("r2m3");
+        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
         leftCollectionServo.setDirection(Servo.Direction.REVERSE);
+
+        relicMotor = hardwareMap.dcMotor.get("r2m0");
     }
 
     private void initalizeIMU(BNO055IMU imu) {
@@ -118,51 +127,48 @@ public class PulsarRobotHardware implements RobotHardware {
         imu.initialize(parameters);
     }
 
-    public void initializePositions(Telemetry tm) {
-        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
-        leftJewelServo.setDirection(Servo.Direction.REVERSE);
-        rightJewelServo.setDirection(Servo.Direction.REVERSE);
+    public void initializePositionsAuto() {
+        collectorUp();
+        jewelsUp(false);
 
-        /*
-            Previous Values (Maybe Better?):
-            leftCollectionServo.setPosition(0.8);
-            rightCollectionServo.setPosition(0.85);
-        */
-
-        intakeUp();
-        jewelsUp();
-
-        tm.addLine("Servo Positions: initialized");
-        tm.update();
+        telemetry.addLine("Servo Positions: initialized");
     }
 
     public void initializePositionsTeleop() {
-        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
-        leftJewelServo.setDirection(Servo.Direction.REVERSE);
-        rightJewelServo.setDirection(Servo.Direction.REVERSE);
-
-        jewelsUp();
+        jewelsUp(true);
     }
 
-    public void jewelsUp() {
+    public void jewelsUp(boolean sleep) {
         leftJewelServo.setPosition(LEFT_JEWEL_UP_POSITON);
         rightJewelServo.setPosition(RIGHT_JEWEL_UP_POSITON);
+        if (sleep) this.opMode.sleep(200);
     }
 
-    public void intakeUp() {
+    public void jewelDown(boolean sleep) {
+        jewelServo.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_DOWN_POSITON : RIGHT_JEWEL_DOWN_POSITON);
+        if (sleep) this.opMode.sleep(200);
+    }
+
+    public void jewelMoveAlt(boolean sleep) {
+        jewelServo.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_ALT_DOWN_POSITON : RIGHT_JEWEL_ALT_DOWN_POSITON);
+        if (sleep) this.opMode.sleep(50);
+    }
+
+    public void collectorUp() {
         leftCollectionServo.setPosition(COLLECTION_UP_POSITION);
         rightCollectionServo.setPosition(COLLECTION_UP_POSITION);
     }
 
-    public void intakeDown() {
+    public void collectorDown() {
         leftCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
         rightCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
     }
 
-    public void intakeHalf() {
-        double pos = (COLLECTION_DOWN_POSITION + COLLECTION_UP_POSITION) / 2;
-        leftCollectionServo.setPosition(pos);
-        rightCollectionServo.setPosition(pos);
+    public void setFlipperPosition(double position) {
+        position *= FLIPPER_POSITION_SCALAR;
+        if (position < FLIPPER_MIN_POSITION) position = FLIPPER_MIN_POSITION;
+        leftFlipperServo.setPosition(position);
+        rightFlipperServo.setPosition(position);
     }
 
     /*
@@ -180,11 +186,10 @@ public class PulsarRobotHardware implements RobotHardware {
          * directions to make the movement possible.
          */
 
-        // FIXME: dividing all corrections by 2000 to prevent overflow is bad
-        double frontLeftPower = velocityY  - velocityX  + correctionAngular/2000.0;
-        double frontRightPower = velocityY + velocityX  - correctionAngular/2000.0;
-        double backRightPower = velocityY - velocityX - correctionAngular/2000.0;
-        double backLeftPower = velocityY + velocityX + correctionAngular/2000.0;
+        double frontLeftPower  = velocityY - velocityX + correctionAngular * CORRECTION_SCALAR;
+        double frontRightPower = velocityY + velocityX - correctionAngular * CORRECTION_SCALAR;
+        double backRightPower  = velocityY - velocityX - correctionAngular * CORRECTION_SCALAR;
+        double backLeftPower   = velocityY + velocityX + correctionAngular * CORRECTION_SCALAR;
 
         frontLeft.setPower(frontLeftPower);
         frontRight.setPower(frontRightPower);
@@ -200,6 +205,9 @@ public class PulsarRobotHardware implements RobotHardware {
         backRight.setPower(0);
     }
 
+    /**
+     * Helper methods for compliance with RobotHardware
+     */
     @Override
     public PIDCalculator.PIDTuning getTurningTuning() {
         return new PIDCalculator.PIDTuning(200, 0, 0);
@@ -207,7 +215,7 @@ public class PulsarRobotHardware implements RobotHardware {
 
     @Override
     public PIDCalculator.PIDTuning getStraightTurning() {
-        return new PIDCalculator.PIDTuning(200, 0, 0);
+        return new PIDCalculator.PIDTuning(100, 0, 0);
     }
 
     @Override

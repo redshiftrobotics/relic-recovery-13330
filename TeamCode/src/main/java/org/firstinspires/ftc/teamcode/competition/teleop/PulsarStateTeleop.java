@@ -9,15 +9,10 @@ import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 import org.redshiftrobotics.lib.pid.imu.IMU;
 import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
-/**
- * Created by Duncan on 1/20/2018.
- */
-
 @TeleOp(name="Pulsar State Teleop", group="Pulsar")
 public class PulsarStateTeleop extends LinearOpMode {
-
     private static final boolean USE_PID = false;
-    private final double FLIPPER_MIN_POSITION = 0.01;
+    private static final boolean RELIC = false; // TODO: actually map relicPower to a control
 
     private PulsarRobotHardware hw;
 
@@ -66,9 +61,9 @@ public class PulsarStateTeleop extends LinearOpMode {
         hw = new PulsarRobotHardware(this, null);
         imu = new IMUWrapper(hw.imu);
 
-        hw.initializePositionsTeleop();
+        hw.jewelsUp(false); // Don't sleep, we want to be able to start ASAP
 
-        telemetry.addLine("Ready for TeleOp!");
+        telemetry.addLine("Ready for TeleOp (at State)!");
         telemetry.addLine();
         telemetry.addLine("Press START to Begin!");
         telemetry.update();
@@ -88,15 +83,11 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void UpdateMotors(){
-        //Update drive motors
         hw.frontLeft.setPower(flPower);
         hw.frontRight.setPower(frPower);
         hw.backLeft.setPower(blPower);
         hw.backRight.setPower(brPower);
 
-
-
-        //Update collector motors
         hw.leftCollectionMotor.setPower(collectorLeft);
         hw.rightCollectionMotor.setPower(collectorRight);
 
@@ -104,58 +95,50 @@ public class PulsarStateTeleop extends LinearOpMode {
         if(conveyorForward) hw.conveyorMotor.setPower(rawConveyorSpeed);
         else hw.conveyorMotor.setPower(-rawConveyorSpeed);
 
-        //Update relic motors
-        //hw.relic.setPower(relicPower);
+        if (RELIC) hw.relicMotor.setPower(relicPower);
     }
 
     private void UpdateServos(){
-        double realFlipperPosition = hw.FLIPPER_POSITION_SCALAR * flipperPosition;
-        if(realFlipperPosition< FLIPPER_MIN_POSITION) realFlipperPosition = FLIPPER_MIN_POSITION;
-        hw.leftFlipperServo.setPosition(realFlipperPosition);
-        hw.rightFlipperServo.setPosition(realFlipperPosition);
+        hw.setFlipperPosition(flipperPosition);
 
-        if (!collectionUp) {
-            hw.leftCollectionServo.setPosition(hw.COLLECTION_UP_POSITION);
-            hw.rightCollectionServo.setPosition(hw.COLLECTION_UP_POSITION);
-        } else {
-            hw.leftCollectionServo.setPosition(hw.COLLECTION_DOWN_POSITION);
-            hw.rightCollectionServo.setPosition(hw.COLLECTION_DOWN_POSITION);
-        }
-        telemetry.addData("collection", collectionUp);
-        telemetry.addData("collservo L", hw.leftCollectionServo.getPosition());
-        telemetry.addData("collservo R", hw.rightCollectionServo.getPosition());
+        if (collectionUp) hw.collectorUp();
+        else hw.collectorDown();
 
-        hw.jewelsUp();
+        hw.jewelsUp(false);
     }
 
     private void ReadDriverControls(Gamepad driver){
         xDrivePower = -driver.right_stick_x * DRIVE_POWER_SCALAR;
         yDrivePower = -driver.right_stick_y * DRIVE_POWER_SCALAR;
         anglePower = driver.left_stick_x * DRIVE_POWER_SCALAR;
+
         movementScalar = 1 - driver.right_trigger;
         if(movementScalar < 0.1) movementScalar = 0.1;
+
         rotationScalar = 1 - driver.left_trigger;
         if(rotationScalar < 0.1) rotationScalar = 0.1;
 
-        telemetry.addData(movementScalar + "", rotationScalar);
+        telemetry.addData("Movement Scalar", movementScalar);
+        telemetry.addData("Rotation Scalar", rotationScalar);
     }
 
     private void ReadOperatorControls(Gamepad operator){
         collectorLeft = -1 * operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
         collectorRight = -1 * operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
+
         conveyorForward = !operator.b;
         collectionUp = operator.y;
         maxConveyorPower = operator.a;
+
         flipperPosition = operator.left_trigger;
     }
 
-    private void ComputePLoop() { //Function to control the robot's movements, this includes calculating P and calculating the motor powers
+    private void ComputePLoop() {
         if(USE_PID) {
             lastAngle = currentAngle;
             currentAngle = imu.getAngularRotationX();
 
-            if (anglePower != 0) isTurning = true;
-            if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;
+            isTurning = Math.abs(lastAngle - currentAngle) < 1 && anglePower != 0;
 
             if (isTurning) {
                 targetAngle = currentAngle;
@@ -182,13 +165,13 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void NormalizeMotorPowers() {
-        //Calculate which motor has the highest non-normalized power
+        // Calculate which motor has the highest non-normalized power
         maxPower = Math.abs(flPower);
         if (Math.abs(frPower) > maxPower) maxPower = Math.abs(frPower);
         else if (Math.abs(blPower) > maxPower) maxPower = Math.abs(blPower);
         else if (Math.abs(brPower) > maxPower) maxPower = Math.abs(brPower);
 
-        //Scale all motor power to fit within -1.0 to 1.0 based on maxPower
+        // Scale all motor power to fit within -1.0 to 1.0 based on maxPower
         flPower = flPower / maxPower;
         frPower = frPower / maxPower;
         blPower = blPower / maxPower;
