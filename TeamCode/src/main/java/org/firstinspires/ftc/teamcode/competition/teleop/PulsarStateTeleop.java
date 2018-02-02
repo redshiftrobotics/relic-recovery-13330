@@ -22,6 +22,7 @@ public class PulsarStateTeleop extends LinearOpMode {
     private static final double COLLECTOR_POWER_LEFT_SCALAR = 1;
     private static final double COLLECTOR_POWER_RIGHT_SCALAR = 1;
     private static final double CONVEYOR_POWER = 0.8f;
+    private static final double RELIC_POWER = 1;
 
     private double xDrivePower = 0;
     private double yDrivePower = 0;
@@ -83,19 +84,19 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void UpdateMotors(){
-        hw.frontLeft.setPower(flPower);
-        hw.frontRight.setPower(frPower);
-        hw.backLeft.setPower(blPower);
-        hw.backRight.setPower(brPower);
+        hw.motors.frontLeft.setPower(flPower);
+        hw.motors.frontRight.setPower(frPower);
+        hw.motors.backLeft.setPower(blPower);
+        hw.motors.backRight.setPower(brPower);
 
-        hw.leftCollectionMotor.setPower(collectorLeft);
-        hw.rightCollectionMotor.setPower(collectorRight);
+        hw.motors.leftCollection.setPower(collectorLeft);
+        hw.motors.rightCollection.setPower(collectorRight);
 
         double rawConveyorSpeed = maxConveyorPower ? 1 : CONVEYOR_POWER;
-        if(conveyorForward) hw.conveyorMotor.setPower(rawConveyorSpeed);
-        else hw.conveyorMotor.setPower(-rawConveyorSpeed);
+        if(conveyorForward) hw.motors.conveyor.setPower(rawConveyorSpeed);
+        else hw.motors.conveyor.setPower(-rawConveyorSpeed);
 
-        if (RELIC) hw.relicMotor.setPower(relicPower);
+        if (RELIC) hw.motors.relic.setPower(relicPower);
     }
 
     private void UpdateServos(){
@@ -130,7 +131,8 @@ public class PulsarStateTeleop extends LinearOpMode {
         collectionUp = operator.y;
         maxConveyorPower = operator.a;
 
-        flipperPosition = operator.left_trigger;
+        if (operator.dpad_up) relicPower = RELIC_POWER;
+        if (operator.dpad_down) relicPower = -RELIC_POWER;
     }
 
     private void ComputePLoop() {

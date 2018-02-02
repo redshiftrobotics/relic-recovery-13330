@@ -22,11 +22,111 @@ import org.redshiftrobotics.lib.pid.imu.IMU;
 import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 public class PulsarRobotHardware implements RobotHardware {
+    public class Servos {
+        public final Servo leftJewel;
+        public final Servo rightJewel;
+        public final Servo jewel;
+
+        public final Servo leftFlipper;
+        public final Servo rightFlipper;
+
+        public final Servo leftCollection;
+        public final Servo rightCollection;
+
+        protected Servos(HardwareMap hardwareMap) {
+            leftJewel = hardwareMap.servo.get("r1s3");
+            leftJewel.setDirection(Servo.Direction.REVERSE);
+            rightJewel = hardwareMap.servo.get("r1s2");
+            rightJewel.setDirection(Servo.Direction.REVERSE);
+            jewel = alliance == PulsarAuto.Alliance.BLUE ? leftJewel : rightJewel;
+
+
+            leftFlipper = hardwareMap.servo.get("r2s1");
+            leftFlipper.setDirection(Servo.Direction.REVERSE);
+            rightFlipper = hardwareMap.servo.get("r2s2");
+
+            leftCollection = hardwareMap.servo.get("r1s1");
+            leftCollection.setDirection(Servo.Direction.REVERSE);
+            rightCollection = hardwareMap.servo.get("r1s0");
+            rightCollection.setDirection(Servo.Direction.REVERSE);
+        }
+    }
+
+    public class Motors {
+        public final DcMotor frontLeft;
+        public final DcMotor frontRight;
+        public final DcMotor backLeft;
+        public final DcMotor backRight;
+
+        public final DcMotor relic;
+        public final DcMotor conveyor;
+
+        public final DcMotor leftCollection;
+        public final DcMotor rightCollection;
+
+        protected Motors(HardwareMap hardwareMap) {
+            frontLeft = hardwareMap.dcMotor.get("r1m0");
+            frontRight = hardwareMap.dcMotor.get("r1m1");
+            backLeft = hardwareMap.dcMotor.get("r1m2");
+            backRight = hardwareMap.dcMotor.get("r1m3");
+            backRight.setDirection(DcMotorSimple.Direction.REVERSE); // XXX: Why only backRight?
+
+            relic = hardwareMap.dcMotor.get("r2m0");
+            conveyor = hardwareMap.dcMotor.get("r2m1");
+
+            leftCollection = hardwareMap.dcMotor.get("r2m2");
+            leftCollection.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightCollection = hardwareMap.dcMotor.get("r2m3");
+            rightCollection.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        }
+    }
+
+    public class ColorSensors {
+        public final ColorSensor leftJewel;
+        public final ColorSensor rightJewel;
+        public final ColorSensor jewel;
+
+        public final ColorSensor tape;
+        public final ColorSensor glyph;
+        public final ColorSensor cryptobox;
+
+        protected ColorSensors(HardwareMap hardwareMap) {
+            leftJewel = hardwareMap.colorSensor.get("r1c1");
+            rightJewel = hardwareMap.colorSensor.get("r1c2");
+            jewel = alliance == PulsarAuto.Alliance.BLUE ? leftJewel : rightJewel;
+
+            tape = hardwareMap.get(ColorSensor.class, "r2c2");
+            glyph = hardwareMap.get(ColorSensor.class, "r1c0");
+            cryptobox = hardwareMap.get(ColorSensor.class, "r2c1");
+
+        }
+    }
+
+    public class DistanceSensors {
+        public final DistanceSensor glyphNear;
+        public final DistanceSensor glyphFar;
+        public final DistanceSensor glyph;
+
+        public final DistanceSensor cryptobox;
+
+        protected DistanceSensors(HardwareMap hardwareMap) {
+            glyphFar = hardwareMap.get(DistanceSensor.class, "r1c0");
+            //glyphNear = hardwareMap.get(DistanceSensor.class, "r2r2");
+            //glyph = new ComboDistanceSensor(glyphNear, glyphFar);
+            glyphNear = glyphFar;
+            glyph = glyphNear;
+
+            cryptobox = hardwareMap.get(DistanceSensor.class, "r2c1");
+
+        }
+    }
+
     // At the start of auto, when we can be reasonably certain that we're parallel to the wall, we
     // store our IMU target, so that TeleOp can use it later to align with the cryptobox.
     private static double cryptoboxTarget;
 
-    public PulsarAuto.Alliance alliance;
+    public final PulsarAuto.Alliance alliance;
 
     public final LinearOpMode opMode;
     public final Context appContext;
@@ -34,42 +134,15 @@ public class PulsarRobotHardware implements RobotHardware {
 
     private final HardwareMap hardwareMap;
 
-    public final DcMotor frontLeft;
-    public final DcMotor frontRight;
-    public final DcMotor backLeft;
-    public final DcMotor backRight;
+    public final Servos servos;
+    public final Motors motors;
+    public final ColorSensors colorSensors;
+    public final DistanceSensors distanceSensors;
+
 
     public final IMU imu;
     public final BNO055IMU hwIMU;
 
-    public final Servo leftJewelServo;
-    public final Servo rightJewelServo;
-    public final Servo jewelServo;
-
-    public final ColorSensor leftJewelDetector;
-    public final ColorSensor rightJewelDetector;
-    public final ColorSensor jewelDetector;
-
-    public final DcMotor conveyorMotor;
-    public final Servo leftFlipperServo;
-    public final Servo rightFlipperServo;
-
-    public final Servo leftCollectionServo;
-    public final Servo rightCollectionServo;
-    public final DcMotor leftCollectionMotor;
-    public final DcMotor rightCollectionMotor;
-
-    public final ColorSensor glyphColorDetector;
-    public final DistanceSensor glyphDetectorNear;
-    public final DistanceSensor glyphDetectorFar;
-    public final DistanceSensor glyphDetector;
-
-    public final DistanceSensor cryptoboxDetectorDistance;
-    public final ColorSensor cryptoboxDetectorColor;
-
-    public final ColorSensor tapeSensor;
-
-    public final DcMotor relicMotor;
 
     // XXX: I'm not sure about this
     public final StraightPIDController straightPIDController;
@@ -104,57 +177,17 @@ public class PulsarRobotHardware implements RobotHardware {
         hardwareMap = opMode.hardwareMap;
         appContext = opMode.hardwareMap.appContext;
 
-        frontLeft = hardwareMap.dcMotor.get("r1m0");
-        frontRight = hardwareMap.dcMotor.get("r1m1");
-        backLeft = hardwareMap.dcMotor.get("r1m2");
-        backRight = hardwareMap.dcMotor.get("r1m3");
-
-        // XXX: Why only backRight?
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-
         hwIMU = hardwareMap.get(BNO055IMU.class, "hwIMU");
         initalizeIMU(hwIMU);
         imu = new IMUWrapper(hwIMU);
 
-        leftJewelServo = hardwareMap.servo.get("r1s3");
-        rightJewelServo = hardwareMap.servo.get("r1s2");
-        jewelServo = alliance == PulsarAuto.Alliance.BLUE ? leftJewelServo : rightJewelServo;
-
-        leftJewelDetector = hardwareMap.colorSensor.get("r1c1");
-        rightJewelDetector = hardwareMap.colorSensor.get("r1c2");
-        leftJewelServo.setDirection(Servo.Direction.REVERSE);
-        rightJewelServo.setDirection(Servo.Direction.REVERSE);
-        jewelDetector = alliance == PulsarAuto.Alliance.BLUE ? leftJewelDetector : rightJewelDetector;
-
-        conveyorMotor = hardwareMap.dcMotor.get("r2m1");
-        leftFlipperServo = hardwareMap.servo.get("r2s1");
-        rightFlipperServo = hardwareMap.servo.get("r2s2");
-        leftFlipperServo.setDirection(Servo.Direction.REVERSE);
-
-        leftCollectionServo = hardwareMap.servo.get("r1s1");
-        rightCollectionServo = hardwareMap.servo.get("r1s0");
-        leftCollectionMotor = hardwareMap.dcMotor.get("r2m2");
-        rightCollectionMotor = hardwareMap.dcMotor.get("r2m3");
-        rightCollectionServo.setDirection(Servo.Direction.REVERSE);
-        leftCollectionServo.setDirection(Servo.Direction.REVERSE);
-        leftCollectionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightCollectionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        relicMotor = hardwareMap.dcMotor.get("r2m0");
-
-        glyphColorDetector = hardwareMap.get(ColorSensor.class, "r1c0");
-        glyphDetectorFar = hardwareMap.get(DistanceSensor.class, "r1c0");
-        //glyphDetectorNear = hardwareMap.get(DistanceSensor.class, "r2r2");
-        glyphDetectorNear = glyphDetectorFar;
-        glyphDetector = glyphDetectorNear;
-        //glyphDetector = new ComboDistanceSensor(glyphDetectorNear, glyphDetectorFar);
-
-        cryptoboxDetectorColor = hardwareMap.get(ColorSensor.class, "r2c1");
-        cryptoboxDetectorDistance = hardwareMap.get(DistanceSensor.class, "r2c1");
-        tapeSensor = hardwareMap.get(ColorSensor.class, "r2c2");
-
         straightPIDController = new StraightPIDController(this);
         turningPIDController = new TurningPIDController(this);
+
+        servos = new Servos(hardwareMap);
+        motors = new Motors(hardwareMap);
+        colorSensors = new ColorSensors(hardwareMap);
+        distanceSensors = new DistanceSensors(hardwareMap);
     }
 
     private void initalizeIMU(BNO055IMU imu) {
@@ -179,47 +212,43 @@ public class PulsarRobotHardware implements RobotHardware {
         jewelsUp(true);
     }
 
-    public void jewelsUp(boolean sleep) {
-        leftJewelServo.setPosition(LEFT_JEWEL_UP_POSITON);
-        rightJewelServo.setPosition(RIGHT_JEWEL_UP_POSITON);
-        if (sleep) this.opMode.sleep(200);
-    }
-
-    public void jewelDown(boolean sleep) {
-        jewelServo.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_DOWN_POSITON : RIGHT_JEWEL_DOWN_POSITON);
-        if (sleep) this.opMode.sleep(200);
-    }
-
-    public void jewelMoveAlt(boolean sleep) {
-        jewelServo.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_ALT_DOWN_POSITON : RIGHT_JEWEL_ALT_DOWN_POSITON);
-        if (sleep) this.opMode.sleep(50);
-    }
-
-    public void collectorUp() {
-        leftCollectionServo.setPosition(COLLECTION_UP_POSITION);
-        rightCollectionServo.setPosition(COLLECTION_UP_POSITION);
-    }
-
-    public void collectorDown() {
-        leftCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
-        rightCollectionServo.setPosition(COLLECTION_DOWN_POSITION);
-    }
 
     public void setFlipperPosition(double position) {
         position *= FLIPPER_POSITION_SCALAR;
         if (position < FLIPPER_MIN_POSITION) position = FLIPPER_MIN_POSITION;
-        leftFlipperServo.setPosition(position);
-        rightFlipperServo.setPosition(position);
+        servos.leftFlipper.setPosition(position);
+        servos.rightFlipper.setPosition(position);
     }
 
+    public void jewelsUp(boolean sleep) {
+        servos.leftJewel.setPosition(LEFT_JEWEL_UP_POSITON);
+        servos.rightJewel.setPosition(RIGHT_JEWEL_UP_POSITON);
+        if (sleep) opMode.sleep(200);
+    }
+    public void jewelDown(boolean sleep) {
+        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_DOWN_POSITON : RIGHT_JEWEL_DOWN_POSITON);
+        if (sleep) opMode.sleep(200);
+    }
+    public void jewelMoveAlt(boolean sleep) {
+        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_ALT_DOWN_POSITON : RIGHT_JEWEL_ALT_DOWN_POSITON);
+        if (sleep) this.opMode.sleep(50);
+    }
+
+    public void collectorUp() {
+        servos.leftCollection.setPosition(COLLECTION_UP_POSITION);
+        servos.rightCollection.setPosition(COLLECTION_UP_POSITION);
+    }
+    public void collectorDown() {
+        servos.leftCollection.setPosition(COLLECTION_DOWN_POSITION);
+        servos.rightCollection.setPosition(COLLECTION_DOWN_POSITION);
+    }
     public void collectorOn() {
-        leftCollectionMotor.setPower(-1);
-        rightCollectionMotor.setPower(-1);
+        motors.leftCollection.setPower(-1);
+        motors.rightCollection.setPower(-1);
     }
-
     public void collectorOff() {
-        leftCollectionMotor.setPower(0);
-        rightCollectionMotor.setPower(0);
+        motors.leftCollection.setPower(0);
+        motors.rightCollection.setPower(0);
 
     }
 
@@ -232,10 +261,10 @@ public class PulsarRobotHardware implements RobotHardware {
      */
     public void alignWithCryptobox() {
         turningPIDController.turnToTarget(cryptoboxTarget, 1000);
-        while (!alliance.detectTape(tapeSensor.red(), tapeSensor.green(), tapeSensor.blue())) {
+        while (!alliance.detectTape(colorSensors.tape.red(), colorSensors.tape.green(), colorSensors.tape.blue())) {
             straightPIDController.move(0.2, 50);
         }
-        while (!alliance.detectCryptoBoxDevider(cryptoboxDetectorColor.red(), cryptoboxDetectorColor.blue(), cryptoboxDetectorColor.green())) {
+        while (!alliance.detectCryptoBoxDevider(colorSensors.cryptobox.red(), colorSensors.cryptobox.blue(), colorSensors.cryptobox.green())) {
             // FIXME: PulsarAuto does a bunch of other magic that we should really do too.
             straightPIDController.strafe(0.2 * alliance.getFlipFactor(), 50);
         }
@@ -261,18 +290,18 @@ public class PulsarRobotHardware implements RobotHardware {
         double backRightPower  = velocityY - velocityX - correctionAngular * CORRECTION_SCALAR;
         double backLeftPower   = velocityY + velocityX + correctionAngular * CORRECTION_SCALAR;
 
-        frontLeft.setPower(frontLeftPower);
-        frontRight.setPower(frontRightPower);
-        backLeft.setPower(backLeftPower);
-        backRight.setPower(backRightPower);
+        motors.frontLeft.setPower(frontLeftPower);
+        motors.frontRight.setPower(frontRightPower);
+        motors.backLeft.setPower(backLeftPower);
+        motors.backRight.setPower(backRightPower);
     }
 
     @Override
     public void stop() {
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
+        motors.frontLeft.setPower(0);
+        motors.frontRight.setPower(0);
+        motors.backLeft.setPower(0);
+        motors.backRight.setPower(0);
     }
 
     /**

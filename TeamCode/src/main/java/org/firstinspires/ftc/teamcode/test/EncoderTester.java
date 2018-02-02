@@ -17,10 +17,10 @@ public class EncoderTester extends LinearOpMode {
 
         while (opModeIsActive()) {
             telemetry.addLine("Encoder Values:");
-            telemetry.addData("Front Left", hw.frontLeft.getCurrentPosition());
-            telemetry.addData("Front Right", hw.frontRight.getCurrentPosition());
-            telemetry.addData("Back Left", hw.backLeft.getCurrentPosition());
-            telemetry.addData("Back Right", hw.backRight.getCurrentPosition());
+            telemetry.addData("Front Left",  hw.motors.frontLeft.getCurrentPosition());
+            telemetry.addData("Front Right", hw.motors.frontRight.getCurrentPosition());
+            telemetry.addData("Back Left",   hw.motors.backLeft.getCurrentPosition());
+            telemetry.addData("Back Right",  hw.motors.backRight.getCurrentPosition());
             telemetry.update();
 
             idle();

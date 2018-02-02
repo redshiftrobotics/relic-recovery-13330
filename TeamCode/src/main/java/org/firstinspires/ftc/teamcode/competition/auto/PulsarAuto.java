@@ -128,7 +128,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         // off the balancing stone
         move(1, 3000);  // TUNE
 
-        hw.conveyorMotor.setPower(1);
+        hw.motors.conveyor.setPower(1);
         hw.setFlipperPosition(0);
 
         // point at the glyph pit
@@ -188,16 +188,16 @@ abstract public class PulsarAuto extends LinearOpMode {
         //}
 
         // Make sure that we could get a cypher with this glyph
-        Glyph.GlyphColor color = (hw.glyphColorDetector.red() > hw.glyphColorDetector.blue() && hw.glyphColorDetector.red() > 150) ? Glyph.GlyphColor.BROWN : Glyph.GlyphColor.GRAY;
+        Glyph.GlyphColor color = (hw.colorSensors.glyph.red() > hw.colorSensors.glyph.blue() && hw.colorSensors.glyph.red() > 150) ? Glyph.GlyphColor.BROWN : Glyph.GlyphColor.GRAY;
         Col col = cryptobox.getNextBlock(color, true); // dry run
 
         telemetry.addData("GlyphColor", color.toString());
         telemetry.addData("Col", col.toString());
-        telemetry.addData("red", hw.glyphColorDetector.red());
-        telemetry.addData("blue", hw.glyphColorDetector.blue());
-        telemetry.addData("green", hw.glyphColorDetector.green());
-        telemetry.addData("alpha", hw.glyphColorDetector.alpha());
-        telemetry.addData("dist", hw.glyphDetector.getDistance(DistanceUnit.CM));
+        telemetry.addData("red",   hw.colorSensors.glyph.red());
+        telemetry.addData("blue",  hw.colorSensors.glyph.blue());
+        telemetry.addData("green", hw.colorSensors.glyph.green());
+        telemetry.addData("alpha", hw.colorSensors.glyph.alpha());
+        telemetry.addData("dist",  hw.distanceSensors.glyph.getDistance(DistanceUnit.CM));
         telemetry.update();
 
         if (col == Col.NONE) {
@@ -256,8 +256,8 @@ abstract public class PulsarAuto extends LinearOpMode {
     }
 
     protected TargetJewelPosition getTargetJewel() {
-        int red = hw.jewelDetector.red();
-        int blue = hw.jewelDetector.blue();
+        int red = hw.colorSensors.jewel.red();
+        int blue = hw.colorSensors.jewel.blue();
 
         Alliance backJewel;
 
