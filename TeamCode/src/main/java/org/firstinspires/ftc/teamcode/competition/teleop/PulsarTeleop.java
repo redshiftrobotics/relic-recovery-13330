@@ -16,7 +16,7 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 //
 //    private PulsarRobotHardware hw;
 //
-//    private IMU imu;
+//    private IMU hwIMU;
 //
 //    private static final double DRIVE_POWER_SCALAR = 0.95;
 //
@@ -46,7 +46,7 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 //        telemetry.update();
 //
 //        hw = new PulsarRobotHardware(this, null);
-//        imu = new IMUWrapper(hw.imu);
+//        hwIMU = new IMUWrapper(hw.hwIMU);
 //
 //        hw.jewelsUp(true);
 //
@@ -138,7 +138,7 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 //     */
 //    private void computePLoop(){ //Function to control the robot's movements, this includes calculating P and calculating the motor powers
 //        lastAngle = currentAngle;
-//        currentAngle = imu.getAngularRotationX();
+//        currentAngle = hwIMU.getAngularRotationX();
 //
 //        if (anglePower != 0) isTurning = true;
 //        if (Math.abs(lastAngle - currentAngle) < 1 && isTurning) isTurning = false;

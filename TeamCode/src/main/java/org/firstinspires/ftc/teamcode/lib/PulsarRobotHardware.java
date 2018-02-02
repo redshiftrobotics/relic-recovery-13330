@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -15,8 +16,16 @@ import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 import org.redshiftrobotics.lib.RobotHardware;
 import org.redshiftrobotics.lib.debug.DebugHelper;
 import org.redshiftrobotics.lib.pid.PIDCalculator;
+import org.redshiftrobotics.lib.pid.StraightPIDController;
+import org.redshiftrobotics.lib.pid.TurningPIDController;
+import org.redshiftrobotics.lib.pid.imu.IMU;
+import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 public class PulsarRobotHardware implements RobotHardware {
+    // At the start of auto, when we can be reasonably certain that we're parallel to the wall, we
+    // store our IMU target, so that TeleOp can use it later to align with the cryptobox.
+    private static double cryptoboxTarget;
+
     public PulsarAuto.Alliance alliance;
 
     public final LinearOpMode opMode;
@@ -30,7 +39,8 @@ public class PulsarRobotHardware implements RobotHardware {
     public final DcMotor backLeft;
     public final DcMotor backRight;
 
-    public final BNO055IMU imu;
+    public final IMU imu;
+    public final BNO055IMU hwIMU;
 
     public final Servo leftJewelServo;
     public final Servo rightJewelServo;
@@ -49,7 +59,21 @@ public class PulsarRobotHardware implements RobotHardware {
     public final DcMotor leftCollectionMotor;
     public final DcMotor rightCollectionMotor;
 
+    public final ColorSensor glyphColorDetector;
+    public final DistanceSensor glyphDetectorNear;
+    public final DistanceSensor glyphDetectorFar;
+    public final DistanceSensor glyphDetector;
+
+    public final DistanceSensor cryptoboxDetectorDistance;
+    public final ColorSensor cryptoboxDetectorColor;
+
+    public final ColorSensor tapeSensor;
+
     public final DcMotor relicMotor;
+
+    // XXX: I'm not sure about this
+    public final StraightPIDController straightPIDController;
+    public final TurningPIDController turningPIDController;
 
     // Constants
     public final double LEFT_JEWEL_UP_POSITON = 0.6;
@@ -88,8 +112,9 @@ public class PulsarRobotHardware implements RobotHardware {
         // XXX: Why only backRight?
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        initalizeIMU(imu);
+        hwIMU = hardwareMap.get(BNO055IMU.class, "hwIMU");
+        initalizeIMU(hwIMU);
+        imu = new IMUWrapper(hwIMU);
 
         leftJewelServo = hardwareMap.servo.get("r1s3");
         rightJewelServo = hardwareMap.servo.get("r1s2");
@@ -112,8 +137,24 @@ public class PulsarRobotHardware implements RobotHardware {
         rightCollectionMotor = hardwareMap.dcMotor.get("r2m3");
         rightCollectionServo.setDirection(Servo.Direction.REVERSE);
         leftCollectionServo.setDirection(Servo.Direction.REVERSE);
+        leftCollectionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightCollectionMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         relicMotor = hardwareMap.dcMotor.get("r2m0");
+
+        glyphColorDetector = hardwareMap.get(ColorSensor.class, "r1c0");
+        glyphDetectorFar = hardwareMap.get(DistanceSensor.class, "r1c0");
+        //glyphDetectorNear = hardwareMap.get(DistanceSensor.class, "r2r2");
+        glyphDetectorNear = glyphDetectorFar;
+        glyphDetector = glyphDetectorNear;
+        //glyphDetector = new ComboDistanceSensor(glyphDetectorNear, glyphDetectorFar);
+
+        cryptoboxDetectorColor = hardwareMap.get(ColorSensor.class, "r2c1");
+        cryptoboxDetectorDistance = hardwareMap.get(DistanceSensor.class, "r2c1");
+        tapeSensor = hardwareMap.get(ColorSensor.class, "r2c2");
+
+        straightPIDController = new StraightPIDController(this);
+        turningPIDController = new TurningPIDController(this);
     }
 
     private void initalizeIMU(BNO055IMU imu) {
@@ -169,6 +210,35 @@ public class PulsarRobotHardware implements RobotHardware {
         if (position < FLIPPER_MIN_POSITION) position = FLIPPER_MIN_POSITION;
         leftFlipperServo.setPosition(position);
         rightFlipperServo.setPosition(position);
+    }
+
+    public void collectorOn() {
+        leftCollectionMotor.setPower(-1);
+        rightCollectionMotor.setPower(-1);
+    }
+
+    public void collectorOff() {
+        leftCollectionMotor.setPower(0);
+        rightCollectionMotor.setPower(0);
+
+    }
+
+    public void storeCryptoboxTarget() {
+        cryptoboxTarget = imu.getAngularRotationX();
+    }
+
+    /**
+     * This method expects that the robot is in the Cryptobox Safe Zone
+     */
+    public void alignWithCryptobox() {
+        turningPIDController.turnToTarget(cryptoboxTarget, 1000);
+        while (!alliance.detectTape(tapeSensor.red(), tapeSensor.green(), tapeSensor.blue())) {
+            straightPIDController.move(0.2, 50);
+        }
+        while (!alliance.detectCryptoBoxDevider(cryptoboxDetectorColor.red(), cryptoboxDetectorColor.blue(), cryptoboxDetectorColor.green())) {
+            // FIXME: PulsarAuto does a bunch of other magic that we should really do too.
+            straightPIDController.strafe(0.2 * alliance.getFlipFactor(), 50);
+        }
     }
 
     /*
@@ -239,7 +309,7 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     @Override
-    public BNO055IMU getIMU() {
+    public IMU getIMU() {
         return imu;
     }
 

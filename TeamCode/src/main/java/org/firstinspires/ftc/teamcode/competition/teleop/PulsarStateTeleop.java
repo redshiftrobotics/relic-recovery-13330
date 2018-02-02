@@ -59,7 +59,7 @@ public class PulsarStateTeleop extends LinearOpMode {
         telemetry.update();
 
         hw = new PulsarRobotHardware(this, null);
-        imu = new IMUWrapper(hw.imu);
+        imu = new IMUWrapper(hw.hwIMU);
 
         hw.jewelsUp(false); // Don't sleep, we want to be able to start ASAP
 
@@ -123,8 +123,8 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ReadOperatorControls(Gamepad operator){
-        collectorLeft = -1 * operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
-        collectorRight = -1 * operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
+        collectorLeft = operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
+        collectorRight = operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
 
         conveyorForward = !operator.b;
         collectionUp = operator.y;
@@ -170,6 +170,8 @@ public class PulsarStateTeleop extends LinearOpMode {
         if (Math.abs(frPower) > maxPower) maxPower = Math.abs(frPower);
         else if (Math.abs(blPower) > maxPower) maxPower = Math.abs(blPower);
         else if (Math.abs(brPower) > maxPower) maxPower = Math.abs(brPower);
+
+        if(maxPower<1) maxPower = 1;
 
         // Scale all motor power to fit within -1.0 to 1.0 based on maxPower
         flPower = flPower / maxPower;
