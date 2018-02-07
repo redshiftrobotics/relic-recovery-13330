@@ -4,11 +4,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 
-@Autonomous(name = "Red Front", group = "Final Auto")
-public class PulsarAutoRedFront extends PulsarAuto {
+@Autonomous(name = "Red B", group = "Final Auto")
+public class PulsarAutoRedB extends PulsarAuto {
     @Override
     protected Alliance getAlliance() { return Alliance.RED; }
 
     @Override
-    protected StartPosition getStartPosition() { return StartPosition.FRONT; }
+    protected StartPosition getStartPosition() { return StartPosition.B; }
 }

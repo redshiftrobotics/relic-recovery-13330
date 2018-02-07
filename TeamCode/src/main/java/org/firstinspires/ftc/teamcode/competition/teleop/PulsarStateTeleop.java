@@ -5,24 +5,32 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
+import org.redshiftrobotics.lib.blockplacer.Col;
 import org.redshiftrobotics.lib.pid.imu.IMU;
 import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 @TeleOp(name="Pulsar State Teleop", group="Pulsar")
 public class PulsarStateTeleop extends LinearOpMode {
     private static final boolean USE_PID = false;
-    private static final boolean RELIC = false; // TODO: actually map relicPower to a control
+    private static final boolean RELIC = true; // TODO: actually map relicPower to a control
 
     private PulsarRobotHardware hw;
 
     private IMU imu;
 
+    private boolean hasHadInput = false;
+
     private static final double DRIVE_POWER_SCALAR = 1;
     private static final double COLLECTOR_POWER_LEFT_SCALAR = 1;
     private static final double COLLECTOR_POWER_RIGHT_SCALAR = 1;
-    private static final double CONVEYOR_POWER = 0.8f;
     private static final double RELIC_POWER = 1;
+    private static final double RELIC_DOWN_POSITION = 0.3;
+    private static final double RELIC_UP_POSITION = 0.60;
+    private static final double RELIC_OPEN_POSITION = 1;
+    private static final double RELIC_CLOSED_POSITION = 0;
+    private static final double RELIC_MAX_POSITION = Double.POSITIVE_INFINITY; // TUNE
 
     private double xDrivePower = 0;
     private double yDrivePower = 0;
@@ -38,10 +46,14 @@ public class PulsarStateTeleop extends LinearOpMode {
     private boolean conveyorForward = true;
     private boolean collectionUp = false;
     private boolean maxConveyorPower = false;
+    private boolean forceAlignWithCrytobox = false;
+    private boolean relicOpen = false;
+    private Col cryptoboxColumn = null;
 
     private double flipperPosition = 0;
     private double movementScalar = 0;
     private double rotationScalar = 0;
+    private double relicWrist = 0;
 
     //Drive motor power
     private double flPower = 0;
@@ -59,7 +71,7 @@ public class PulsarStateTeleop extends LinearOpMode {
         telemetry.addLine("Initializing for TeleOp!");
         telemetry.update();
 
-        hw = new PulsarRobotHardware(this, null);
+        hw = new PulsarRobotHardware(this, PulsarAuto.Alliance.BLUE); // TODO: we actually need this now
         imu = new IMUWrapper(hw.hwIMU);
 
         hw.jewelsUp(false); // Don't sleep, we want to be able to start ASAP
@@ -72,6 +84,7 @@ public class PulsarStateTeleop extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            CheckForInputPresence();
             ReadDriverControls(gamepad1);
             ReadOperatorControls(gamepad2);
             ComputePLoop();
@@ -79,24 +92,44 @@ public class PulsarStateTeleop extends LinearOpMode {
             //Update all hardware based on user input, these must be called last
             UpdateMotors();
             UpdateServos();
+            telemetry.addData("Relic Enc", hw.motors.relic.getCurrentPosition());
             telemetry.update();
         }
     }
 
+    private void CheckForInputPresence() {
+        hasHadInput = hasHadInput || !gamepad1.atRest() || !gamepad2.atRest();
+    }
+
     private void UpdateMotors(){
-        hw.motors.frontLeft.setPower(flPower);
-        hw.motors.frontRight.setPower(frPower);
-        hw.motors.backLeft.setPower(blPower);
-        hw.motors.backRight.setPower(brPower);
+        if (!hasHadInput) return;
+
+        if (forceAlignWithCrytobox && cryptoboxColumn != null) {
+            telemetry.addLine("MOTORS DISABLED-- Aligning with Cryptobox [EXPERIMENTAL]");
+            telemetry.addData("Cryptobox Column", cryptoboxColumn);
+            hw.alignWithCryptobox(cryptoboxColumn);
+        } else {
+            hw.motors.frontLeft.setPower(flPower);
+            hw.motors.frontRight.setPower(frPower);
+            hw.motors.backLeft.setPower(blPower);
+            hw.motors.backRight.setPower(brPower);
+        }
 
         hw.motors.leftCollection.setPower(collectorLeft);
         hw.motors.rightCollection.setPower(collectorRight);
 
-        double rawConveyorSpeed = maxConveyorPower ? 1 : CONVEYOR_POWER;
-        if(conveyorForward) hw.motors.conveyor.setPower(rawConveyorSpeed);
-        else hw.motors.conveyor.setPower(-rawConveyorSpeed);
+        double rawConveyorSpeed = maxConveyorPower ? 1 : hw.CONVEYOR_POWER;
+        if (!conveyorForward) rawConveyorSpeed *= -1;
+        hw.setConveyorPower(rawConveyorSpeed);
 
-        if (RELIC) hw.motors.relic.setPower(relicPower);
+        if (RELIC) {
+            if (hw.motors.relic.getCurrentPosition() >= RELIC_MAX_POSITION || hw.motors.relic.getCurrentPosition() <= 0) {
+                telemetry.addLine("Relic at min/max position!");
+                hw.motors.relic.setPower(0);
+            } else {
+                hw.motors.relic.setPower(relicPower);
+            }
+        }
     }
 
     private void UpdateServos(){
@@ -104,6 +137,9 @@ public class PulsarStateTeleop extends LinearOpMode {
 
         if (collectionUp) hw.collectorUp();
         else hw.collectorDown();
+
+        hw.servos.relicClaw.setPosition(relicOpen ? RELIC_OPEN_POSITION : RELIC_CLOSED_POSITION);
+        hw.servos.relicWrist.setPosition(relicWrist);
 
         hw.jewelsUp(false);
     }
@@ -119,6 +155,16 @@ public class PulsarStateTeleop extends LinearOpMode {
         rotationScalar = 1 - driver.left_trigger;
         if(rotationScalar < 0.1) rotationScalar = 0.1;
 
+        if (driver.dpad_up || driver.dpad_left || driver.dpad_right) {
+            forceAlignWithCrytobox = true;
+            if (driver.dpad_up) cryptoboxColumn = Col.CENTER;
+            else if (driver.dpad_left) cryptoboxColumn = Col.LEFT;
+            else if (driver.dpad_right) cryptoboxColumn = Col.RIGHT;
+        } else {
+            forceAlignWithCrytobox = false;
+            cryptoboxColumn = null;
+        }
+
         telemetry.addData("Movement Scalar", movementScalar);
         telemetry.addData("Rotation Scalar", rotationScalar);
     }
@@ -130,9 +176,13 @@ public class PulsarStateTeleop extends LinearOpMode {
         conveyorForward = !operator.b;
         collectionUp = operator.y;
         maxConveyorPower = operator.a;
+        flipperPosition = operator.left_trigger;
 
+        relicWrist = operator.right_trigger > 0.5 ? RELIC_UP_POSITION : RELIC_DOWN_POSITION;
         if (operator.dpad_up) relicPower = RELIC_POWER;
-        if (operator.dpad_down) relicPower = -RELIC_POWER;
+        else if (operator.dpad_down) relicPower = -RELIC_POWER;
+        else relicPower = 0;
+        relicOpen = operator.dpad_left;
     }
 
     private void ComputePLoop() {

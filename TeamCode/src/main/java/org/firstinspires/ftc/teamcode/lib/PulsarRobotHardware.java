@@ -14,7 +14,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 import org.redshiftrobotics.lib.RobotHardware;
+import org.redshiftrobotics.lib.Vector2D;
+import org.redshiftrobotics.lib.blockplacer.Col;
 import org.redshiftrobotics.lib.debug.DebugHelper;
+import org.redshiftrobotics.lib.pid.BumpAlignPIDController;
 import org.redshiftrobotics.lib.pid.PIDCalculator;
 import org.redshiftrobotics.lib.pid.StraightPIDController;
 import org.redshiftrobotics.lib.pid.TurningPIDController;
@@ -23,9 +26,12 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 public class PulsarRobotHardware implements RobotHardware {
     public class Servos {
-        public final Servo leftJewel;
-        public final Servo rightJewel;
+        public final Servo blueJewel;
+        public final Servo redJewel;
         public final Servo jewel;
+
+        public final Servo relicClaw;
+        public final Servo relicWrist;
 
         public final Servo leftFlipper;
         public final Servo rightFlipper;
@@ -34,12 +40,15 @@ public class PulsarRobotHardware implements RobotHardware {
         public final Servo rightCollection;
 
         protected Servos(HardwareMap hardwareMap) {
-            leftJewel = hardwareMap.servo.get("r1s3");
-            leftJewel.setDirection(Servo.Direction.REVERSE);
-            rightJewel = hardwareMap.servo.get("r1s2");
-            rightJewel.setDirection(Servo.Direction.REVERSE);
-            jewel = alliance == PulsarAuto.Alliance.BLUE ? leftJewel : rightJewel;
+            blueJewel = hardwareMap.servo.get("r1s2");
+            blueJewel.setDirection(Servo.Direction.REVERSE);
+            redJewel = hardwareMap.servo.get("r1s3");
+            redJewel.setDirection(Servo.Direction.REVERSE);
+            jewel = alliance == PulsarAuto.Alliance.BLUE ? blueJewel : redJewel;
 
+            relicClaw = hardwareMap.servo.get("r2s4");
+            relicWrist = hardwareMap.servo.get("r2s3");
+            relicWrist.setDirection(Servo.Direction.REVERSE);
 
             leftFlipper = hardwareMap.servo.get("r2s1");
             leftFlipper.setDirection(Servo.Direction.REVERSE);
@@ -83,22 +92,22 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public class ColorSensors {
-        public final ColorSensor leftJewel;
-        public final ColorSensor rightJewel;
+        public final ColorSensor blueJewel;
+        public final ColorSensor redJewel;
         public final ColorSensor jewel;
 
-        public final ColorSensor tape;
+        public final ColorSensor rightTape;
+        public final ColorSensor leftTape;
         public final ColorSensor glyph;
-        public final ColorSensor cryptobox;
 
         protected ColorSensors(HardwareMap hardwareMap) {
-            leftJewel = hardwareMap.colorSensor.get("r1c1");
-            rightJewel = hardwareMap.colorSensor.get("r1c2");
-            jewel = alliance == PulsarAuto.Alliance.BLUE ? leftJewel : rightJewel;
+            blueJewel = hardwareMap.colorSensor.get("r1c2");
+            redJewel = hardwareMap.colorSensor.get("r1c1");
+            jewel = alliance == PulsarAuto.Alliance.BLUE ? blueJewel : redJewel;
 
-            tape = hardwareMap.get(ColorSensor.class, "r2c2");
+            leftTape = hardwareMap.get(ColorSensor.class, "r2c2");
+            rightTape = hardwareMap.get(ColorSensor.class, "r2c1");
             glyph = hardwareMap.get(ColorSensor.class, "r1c0");
-            cryptobox = hardwareMap.get(ColorSensor.class, "r2c1");
 
         }
     }
@@ -149,14 +158,21 @@ public class PulsarRobotHardware implements RobotHardware {
     public final TurningPIDController turningPIDController;
 
     // Constants
-    public final double LEFT_JEWEL_UP_POSITON = 0.6;
-    public final double LEFT_JEWEL_DOWN_POSITON = 0;
-    public final double LEFT_JEWEL_ALT_DOWN_POSITON = 0.05;
-    public final double RIGHT_JEWEL_UP_POSITON = 0.5;
-    public final double RIGHT_JEWEL_DOWN_POSITON = 0.8;
-    public final double RIGHT_JEWEL_ALT_DOWN_POSITON = 0.75;
+    private static final long TWEEN_TIME = 500;
 
-    public final double CONVEYOR_SPEED = 0.65;
+    private static final double X_SPEED_SCALAR = 0.9;
+    private static final double Y_SPEED_SCALAR = 0.9;
+    private static final double TURN_ANGLE_SCALAR = 1;
+
+
+    public final double RED_JEWEL_UP_POSITON = 0.6;
+    public final double RED_JEWEL_DOWN_POSITON = 0;
+    public final double RED_JEWEL_ALT_DOWN_POSITON = 0.05;
+    public final double BLUE_JEWEL_UP_POSITON = 0.5;
+    public final double BLUE_JEWEL_DOWN_POSITON = 0.8;
+    public final double BLUE_JEWEL_ALT_DOWN_POSITON = 0.75;
+
+    public final double CONVEYOR_POWER = 0.8;
     public final double FLIPPER_POSITION_SCALAR = 0.8;
     public final double FLIPPER_MIN_POSITION = 0.01;
 
@@ -177,7 +193,7 @@ public class PulsarRobotHardware implements RobotHardware {
         hardwareMap = opMode.hardwareMap;
         appContext = opMode.hardwareMap.appContext;
 
-        hwIMU = hardwareMap.get(BNO055IMU.class, "hwIMU");
+        hwIMU = hardwareMap.get(BNO055IMU.class, "imu");
         initalizeIMU(hwIMU);
         imu = new IMUWrapper(hwIMU);
 
@@ -221,17 +237,17 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void jewelsUp(boolean sleep) {
-        servos.leftJewel.setPosition(LEFT_JEWEL_UP_POSITON);
-        servos.rightJewel.setPosition(RIGHT_JEWEL_UP_POSITON);
-        if (sleep) opMode.sleep(200);
+        servos.blueJewel.setPosition(BLUE_JEWEL_UP_POSITON);
+        servos.redJewel.setPosition(RED_JEWEL_UP_POSITON);
+        if (sleep) opMode.sleep(1000);
     }
     public void jewelDown(boolean sleep) {
-        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_DOWN_POSITON : RIGHT_JEWEL_DOWN_POSITON);
-        if (sleep) opMode.sleep(200);
+        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_DOWN_POSITON : RED_JEWEL_DOWN_POSITON);
+        if (sleep) opMode.sleep(1000);
     }
     public void jewelMoveAlt(boolean sleep) {
-        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? LEFT_JEWEL_ALT_DOWN_POSITON : RIGHT_JEWEL_ALT_DOWN_POSITON);
-        if (sleep) this.opMode.sleep(50);
+        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_ALT_DOWN_POSITON : RED_JEWEL_ALT_DOWN_POSITON);
+        if (sleep) this.opMode.sleep(1000);
     }
 
     public void collectorUp() {
@@ -242,15 +258,24 @@ public class PulsarRobotHardware implements RobotHardware {
         servos.leftCollection.setPosition(COLLECTION_DOWN_POSITION);
         servos.rightCollection.setPosition(COLLECTION_DOWN_POSITION);
     }
+    public void setCollectorPower(double power) {
+        motors.leftCollection.setPower(power);
+        motors.rightCollection.setPower(power);
+    }
     public void collectorOn() {
-        motors.leftCollection.setPower(-1);
-        motors.rightCollection.setPower(-1);
+        setCollectorPower(-1);
+    }
+    public void collectorReverse() {
+        setCollectorPower(1);
     }
     public void collectorOff() {
-        motors.leftCollection.setPower(0);
-        motors.rightCollection.setPower(0);
-
+        setCollectorPower(0);
     }
+
+    public void setConveyorPower(double power) { motors.conveyor.setPower(power); }
+    public void conveyorOff() { setConveyorPower(0); }
+    public void conveyorOn() { setConveyorPower(CONVEYOR_POWER); }
+    public void conveyorReverse() { setConveyorPower(-CONVEYOR_POWER); }
 
     public void storeCryptoboxTarget() {
         cryptoboxTarget = imu.getAngularRotationX();
@@ -259,15 +284,27 @@ public class PulsarRobotHardware implements RobotHardware {
     /**
      * This method expects that the robot is in the Cryptobox Safe Zone
      */
-    public void alignWithCryptobox() {
+    public void alignWithCryptobox() { alignWithCryptobox(Col.CENTER); }
+    public void alignWithCryptobox(Col col) {
+        BumpAlignPIDController bumpAlignPIDController = new BumpAlignPIDController(this);
         turningPIDController.turnToTarget(cryptoboxTarget, 1000);
-        while (!alliance.detectTape(colorSensors.tape.red(), colorSensors.tape.green(), colorSensors.tape.blue())) {
-            straightPIDController.move(0.2, 50);
+
+        bumpAlignPIDController.align(1 * Y_SPEED_SCALAR, 1 * X_SPEED_SCALAR * alliance.getFlipFactor(), 5000);
+
+        // as of now, we should be centered in the triangle (safe zone).
+        // TUNE: we may need to move forward a bit to deposit
+
+        switch (col) {
+            default:
+            case CENTER: break; // we're already centered
+            case LEFT:
+                strafe(1, 750); // strafe to the right, because the robot is backwards
+                break;
+            case RIGHT:
+                strafe(-1, 750); // strafe to the left, because the robot is backwards
+                break;
         }
-        while (!alliance.detectCryptoBoxDevider(colorSensors.cryptobox.red(), colorSensors.cryptobox.blue(), colorSensors.cryptobox.green())) {
-            // FIXME: PulsarAuto does a bunch of other magic that we should really do too.
-            straightPIDController.strafe(0.2 * alliance.getFlipFactor(), 50);
-        }
+
     }
 
     /*
@@ -305,11 +342,50 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     /**
+     * Helper methods for moving with PID, because we mirror everything for the red alliance
+     */
+    public void move(double speed, long time) {
+        move(speed, time, TWEEN_TIME);
+    }
+    public void move(double speed, long time, long tweenTime) {
+        straightPIDController.move(Y_SPEED_SCALAR * speed, time, tweenTime);
+    }
+    // This method doesn't have a tweenTime-less variant because move(num, num, num) is ambiguous.
+    public void move(long time, long tweenTime, double xPower, double yPower) {
+        move(time, tweenTime, new Vector2D(xPower, yPower));
+    }
+    public void move(long time, Vector2D velocity) {
+        move(time, TWEEN_TIME, velocity);
+    }
+    public void move(long time, long tweenTime, Vector2D velocity) {
+        double x = X_SPEED_SCALAR * velocity.getXComponent();
+        double y = Y_SPEED_SCALAR * velocity.getYComponent() * alliance.getFlipFactor();
+        straightPIDController.move(time, tweenTime, new Vector2D(x, y));
+    }
+
+    public void strafe(double speed, long time) {
+        strafe(speed, time, TWEEN_TIME);
+    }
+    public void strafe(double speed, long time, long tweenTime) {
+        straightPIDController.strafe(speed * X_SPEED_SCALAR * alliance.getFlipFactor(), time, tweenTime);
+    }
+
+    public void turn(double angle) {
+        turn(angle, 1000);
+    }
+    public void turn(double angle, long time) {
+        turningPIDController.turn(angle * TURN_ANGLE_SCALAR * alliance.getFlipFactor(), time);
+    }
+    public void turn(double angle, long time, double powerConstant) {
+        turningPIDController.turn(angle * TURN_ANGLE_SCALAR * alliance.getFlipFactor(), time, powerConstant);
+    }
+
+    /**
      * Helper methods for compliance with RobotHardware
      */
     @Override
     public PIDCalculator.PIDTuning getTurningTuning() {
-        return new PIDCalculator.PIDTuning(200, 0, 0);
+        return new PIDCalculator.PIDTuning(100, 0, 0);
     }
 
     @Override

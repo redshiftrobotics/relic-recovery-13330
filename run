@@ -2,6 +2,8 @@
 
 echo "Building and Running..."
 
+echo "Stopping..." && \
+adb shell am force-stop com.qualcomm.ftcrobotcontroller
 echo "Building..." && \
 ./gradlew assembleDebug && \
 echo "Running..." && \
