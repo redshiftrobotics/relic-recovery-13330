@@ -37,10 +37,9 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected enum TargetJewelPosition {FRONT, BACK, NONE}
 
     private Col targetColumn = Col.NONE;
+    private Glyph.GlyphColor lastGlyphColor = Glyph.GlyphColor.GRAY; // Always start with gray
 
     protected PulsarRobotHardware hw;
-
-    private Cryptobox cryptobox;
 
     private VuforiaController vuforiaController;
 
@@ -78,130 +77,99 @@ abstract public class PulsarAuto extends LinearOpMode {
             hw.jewelsUp(true);
         }
 
+        if (targetColumn == Col.NONE && getAlliance() == Alliance.BLUE) {
+            hw.turn(5, 1000, 0.05);
+            scanCryptoKey();
+            hw.turn(-5, 1000, 0.05);
+        }
 
-        // It's a penalty if we cross the center line, so we default to the left as it's the farthest
-        // from that. It's also the hardest for TeleOp, so may as well get it over with.
         if (targetColumn == Col.NONE) targetColumn = Col.LEFT;
 
         telemetry.addData("Target Column", targetColumn.toString());
         telemetry.update();
 
-        if (isSimpleAuto()) {
-            switch (getStartPosition()) {
-                case A:
-                    simpleAutoA();
-                    break;
-                case B:
-                    simpleAutoB();
-                    break;
-            }
-            return;
+        switch (getStartPosition()) {
+            case A:
+                autoA();
+                break;
+            case B:
+                autoB();
+                break;
         }
-
-        // TODO: Do we always want to start with a gray glyph?
-        cryptobox = new Cryptobox(Glyph.GlyphColor.GRAY, targetColumn);
-
-        // point to the center line, so that we can drive to the glyph pit
-        hw.turn(90, 1000, 0.1);
-
-        hw.collectorDown();
-
-        // off the balancing stone
-        hw.move(1, 3000);  // TUNE
-
-        hw.conveyorOn();
-        hw.setFlipperPosition(0);
-
-        // point at the glyph pit
-        hw.turn(-45, 1000);
-
-        // collect the glyphs
-        collectGlyph();
-        collectGlyph();
-
-        // Back out of the glyph pit
-        hw.move(-1, 1000); // TUNE
-
-        // Go back to the Cryptobox
-        hw.turn(45, 1000);
-        hw.move(-1, 4000);
-
-        // Move into the general area of the cryptobox
-        hw.strafe(1, 1000); // TUNE
-
-        // place the block
-        hw.alignWithCryptobox(targetColumn);
-        hw.collectorOff();
-        hw.setFlipperPosition(1);
-        hw.move(0.4, 500); // back up
-        hw.move(-1, 500, 0); // ram it in
-        hw.move(1, 200); // Park in the safe zone
     }
 
-    private void simpleAutoA() {
+    private void autoA() {
         hw.move(-1, 1500);
         hw.strafe(1, 750);
         depositGlyph();
         hw.move(1, 500);
     }
 
-    private void simpleAutoB() {
+    private void autoB() {
         hw.move(-1, 1500);
         hw.turn(-90, 2000);
         depositGlyph();
-        hw.move(1, 500);
-    }
 
-    private void depositGlyph() {
-        hw.setFlipperPosition(1);
-        sleep(1500);
-        hw.move(0.2, 1000);
-        hw.move(-1, 500, 0);
-    }
-
-    private void scanCryptoKey() {
-        if (targetColumn != Col.NONE) return;
-        targetColumn = vuforiaController.detectColumn();
-        telemetry.addData("CryptoKey", targetColumn.toString());
+        if (isSimpleAuto()) {
+            hw.move(1, 500);
+        } else {
+            hw.move(1, 3000);
+            collectGlyph();
+            collectGlyph();
+            hw.move(-1, 3000);
+            depositGlyph();
+        }
     }
 
     private void collectGlyph() {
         hw.conveyorOff();
         hw.collectorOn();
 
-        // move forward a bit, this should collect a glyph
-        hw.move(0.5, 500); // TUNE
+        hw.move(1, 750);
 
-        hw.collectorOff();
-
-        // Make sure that we could get a cypher with this glyph
         Glyph.GlyphColor color = Glyph.GlyphColor.fromSensor(hw.colorSensors.glyph);
-        Col col = cryptobox.getNextBlock(color, true); // dry run
 
-        telemetry.addData("GlyphColor", color.toString());
-        telemetry.addData("Col", col.toString());
-        telemetry.addData("red",   hw.colorSensors.glyph.red());
-        telemetry.addData("blue",  hw.colorSensors.glyph.blue());
-        telemetry.addData("green", hw.colorSensors.glyph.green());
-        telemetry.addData("alpha", hw.colorSensors.glyph.alpha());
-        telemetry.addData("dist",  hw.distanceSensors.glyph.getDistance(DistanceUnit.CM));
-        telemetry.update();
-
-        if (col == Col.NONE) {
+        if (lastGlyphColor == color) {
+            hw.collectorOff();
             hw.turn(90, 1000);
             hw.collectorReverse();
-            sleep(200);
+            sleep(1000);
             hw.collectorOff();
             hw.turn(-90, 1000);
             collectGlyph();
         } else {
-            // Actually add it to our virtual cryptobox.
-            targetColumn = cryptobox.getNextBlock(color, false); // do it for real
             hw.conveyorOn();
-            hw.collectorOn();
-            sleep(350); // TUNE
+            sleep(2000);
             hw.collectorOff();
+            lastGlyphColor = color;
         }
+        hw.move(-1, 750);
+    }
+
+
+    private void depositGlyph() {
+        long strafeTime;
+        if ((getAlliance() == Alliance.BLUE && targetColumn == Col.LEFT) || (getAlliance() == Alliance.RED && targetColumn == Col.RIGHT)) {
+            strafeTime = 0;
+            // We don't need to do anything, we're already at this column.
+        } else if (targetColumn == Col.CENTER) {
+            strafeTime = 750;
+        } else {
+            strafeTime = 1250;
+        }
+        hw.strafe(1, strafeTime);
+        hw.setFlipperPosition(1);
+        sleep(1500);
+        hw.move(0.2, 1000);
+        hw.move(-1, 500, 0);
+        hw.move(1, 150);
+        hw.strafe(-1, strafeTime);
+    }
+
+    private void scanCryptoKey() {
+        if (targetColumn != Col.NONE) return;
+        targetColumn = vuforiaController.detectColumn();
+        telemetry.addData("CryptoKey", targetColumn.toString());
     }
 
     // Lower jewel before calling this method
