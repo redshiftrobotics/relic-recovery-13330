@@ -18,6 +18,7 @@ public class VuforiaTester extends LinearOpMode {
             telemetry.addLine("Welcome to the Vuforia Tester!");
             telemetry.addLine();
             telemetry.addData("Detected Column", vc.detectColumn().toString());
+            telemetry.update();
         }
     }
 }

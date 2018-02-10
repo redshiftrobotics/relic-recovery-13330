@@ -8,11 +8,12 @@ import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 import org.redshiftrobotics.lib.blockplacer.Col;
 import org.redshiftrobotics.lib.blockplacer.Cryptobox;
 import org.redshiftrobotics.lib.blockplacer.Glyph;
+import org.redshiftrobotics.lib.debug.DebugHelper;
 import org.redshiftrobotics.lib.vuforia.VuforiaController;
 
 
 abstract public class PulsarAuto extends LinearOpMode {
-    private static final boolean JEWEL = true;
+    private static final boolean JEWEL = false;
 
     abstract protected Alliance getAlliance();
     abstract protected StartPosition getStartPosition();
@@ -54,17 +55,34 @@ abstract public class PulsarAuto extends LinearOpMode {
         hw = new PulsarRobotHardware(this, getAlliance());
         hw.collectorUp();
         hw.jewelsUp(true);
+        hw.setFlipperPosition(0);
 
         vuforiaController = new VuforiaController(hw);
 
         telemetry.addLine("Ready");
         telemetry.update();
 
-        waitForStart();
+
+        while (DebugHelper.isEnabled() && !opModeIsActive()) {
+            telemetry.addLine("Ready");
+            telemetry.addData("Default Col", targetColumn);
+            telemetry.update();
+
+            if (gamepad1.a) targetColumn = Col.LEFT;
+            if (gamepad1.b) targetColumn = Col.CENTER;
+            if (gamepad1.x) targetColumn = Col.RIGHT;
+            if (gamepad1.y) targetColumn = Col.NONE;
+
+            idle();
+        }
+
+        if (!opModeIsActive()) waitForStart();
 
         hw.storeCryptoboxTarget();
         hw.setConveyorPower(1);
 
+        scanCryptoKey();
+        sleep(1000);
         scanCryptoKey();
         telemetry.addLine("Lowering Jewel");
         telemetry.update();
@@ -83,7 +101,7 @@ abstract public class PulsarAuto extends LinearOpMode {
             hw.turn(-5, 1000, 0.05);
         }
 
-        if (targetColumn == Col.NONE) targetColumn = Col.LEFT;
+        if (targetColumn == Col.NONE) targetColumn = Col.CENTER;
 
         telemetry.addData("Target Column", targetColumn.toString());
         telemetry.update();
@@ -99,10 +117,9 @@ abstract public class PulsarAuto extends LinearOpMode {
     }
 
     private void autoA() {
-        hw.move(-1, 1500);
+        hw.move(-1, 1300);
         hw.strafe(1, 750);
         depositGlyph();
-        hw.move(1, 500);
     }
 
     private void autoB() {
@@ -110,9 +127,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         hw.turn(-90, 2000);
         depositGlyph();
 
-        if (isSimpleAuto()) {
-            hw.move(1, 500);
-        } else {
+        if (!isSimpleAuto()) {
             hw.move(1, 3000);
             collectGlyph();
             collectGlyph();
@@ -153,21 +168,22 @@ abstract public class PulsarAuto extends LinearOpMode {
             strafeTime = 0;
             // We don't need to do anything, we're already at this column.
         } else if (targetColumn == Col.CENTER) {
-            strafeTime = 750;
+            strafeTime = 1000;
         } else {
             strafeTime = 1250;
         }
-        hw.strafe(1, strafeTime);
+        if (strafeTime > 0) hw.strafe(1, strafeTime);
         hw.setFlipperPosition(1);
         sleep(1500);
         hw.move(0.2, 1000);
         hw.move(-1, 500, 0);
-        hw.move(1, 150);
+        hw.move(1, 350);
         hw.strafe(-1, strafeTime);
     }
 
     private void scanCryptoKey() {
         if (targetColumn != Col.NONE) return;
+        targetColumn = vuforiaController.detectColumn();
         targetColumn = vuforiaController.detectColumn();
         telemetry.addData("CryptoKey", targetColumn.toString());
     }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.lib;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -57,7 +58,7 @@ public class PulsarRobotHardware implements RobotHardware {
             leftCollection = hardwareMap.servo.get("r1s1");
             leftCollection.setDirection(Servo.Direction.REVERSE);
             rightCollection = hardwareMap.servo.get("r1s0");
-            rightCollection.setDirection(Servo.Direction.REVERSE);
+            rightCollection.setDirection(Servo.Direction.FORWARD);
         }
     }
 
@@ -84,9 +85,7 @@ public class PulsarRobotHardware implements RobotHardware {
             conveyor = hardwareMap.dcMotor.get("r2m1");
 
             leftCollection = hardwareMap.dcMotor.get("r2m2");
-            leftCollection.setDirection(DcMotorSimple.Direction.REVERSE);
             rightCollection = hardwareMap.dcMotor.get("r2m3");
-            rightCollection.setDirection(DcMotorSimple.Direction.REVERSE);
 
         }
     }
@@ -176,8 +175,10 @@ public class PulsarRobotHardware implements RobotHardware {
     public final double FLIPPER_POSITION_SCALAR = 0.8;
     public final double FLIPPER_MIN_POSITION = 0.01;
 
-    public final double COLLECTION_UP_POSITION = 1;
-    public final double COLLECTION_DOWN_POSITION = 0;
+    public final double COLLECTION_LEFT_UP_POSITION = 1;
+    public final double COLLECTION_LEFT_DOWN_POSITION = 0;
+    public final double COLLECTION_RIGHT_UP_POSITION = 1;
+    public final double COLLECTION_RIGHT_DOWN_POSITION = 0.40;
 
     // FIXME: dividing all corrections by 2000 to prevent overflow is bad
     public final double CORRECTION_SCALAR = 1.0 / 2000.0;
@@ -251,12 +252,12 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void collectorUp() {
-        servos.leftCollection.setPosition(COLLECTION_UP_POSITION);
-        servos.rightCollection.setPosition(COLLECTION_UP_POSITION);
+        servos.leftCollection.setPosition(COLLECTION_LEFT_UP_POSITION);
+        servos.rightCollection.setPosition(COLLECTION_RIGHT_UP_POSITION);
     }
     public void collectorDown() {
-        servos.leftCollection.setPosition(COLLECTION_DOWN_POSITION);
-        servos.rightCollection.setPosition(COLLECTION_DOWN_POSITION);
+        servos.leftCollection.setPosition(COLLECTION_LEFT_DOWN_POSITION);
+        servos.rightCollection.setPosition(COLLECTION_RIGHT_DOWN_POSITION);
     }
     public void setCollectorPower(double power) {
         motors.leftCollection.setPower(power);
@@ -321,6 +322,11 @@ public class PulsarRobotHardware implements RobotHardware {
          * movement and strafing require changes, because different wheels must move in different
          * directions to make the movement possible.
          */
+
+        Log.d("RedshiftVelX", String.valueOf(velocityX));
+        Log.d("RedshiftVelY", String.valueOf(velocityY));
+        Log.d("RedshiftCorrectAng", String.valueOf(correctionAngular));
+
 
         double frontLeftPower  = velocityY - velocityX + correctionAngular * CORRECTION_SCALAR;
         double frontRightPower = velocityY + velocityX - correctionAngular * CORRECTION_SCALAR;
@@ -400,7 +406,7 @@ public class PulsarRobotHardware implements RobotHardware {
 
     @Override
     public double getTurningAngleThreshold() {
-        return 1;
+        return 0.1;
     }
 
     @Override
