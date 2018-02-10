@@ -123,8 +123,8 @@ abstract public class PulsarAuto extends LinearOpMode {
     }
 
     private void autoB() {
-        hw.move(-1, 1500);
-        hw.turn(-90, 2000);
+        hw.move(-1, 1200);
+        hw.turn(90, 2000);
         depositGlyph();
 
         if (!isSimpleAuto()) {
