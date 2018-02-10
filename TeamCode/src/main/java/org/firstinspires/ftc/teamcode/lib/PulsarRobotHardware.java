@@ -27,9 +27,13 @@ import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 public class PulsarRobotHardware implements RobotHardware {
     public class Servos {
-        public final Servo blueJewel;
-        public final Servo redJewel;
-        public final Servo jewel;
+        public final Servo blueJewelArm;
+        public final Servo redJewelArm;
+        public final Servo jewelArm;
+
+        public final Servo blueJewelKicker;
+        public final Servo redJewelKicker;
+        public final Servo jewelKicker;
 
         public final Servo relicClaw;
         public final Servo relicWrist;
@@ -41,11 +45,15 @@ public class PulsarRobotHardware implements RobotHardware {
         public final Servo rightCollection;
 
         protected Servos(HardwareMap hardwareMap) {
-            blueJewel = hardwareMap.servo.get("r1s2");
-            blueJewel.setDirection(Servo.Direction.REVERSE);
-            redJewel = hardwareMap.servo.get("r1s3");
-            redJewel.setDirection(Servo.Direction.REVERSE);
-            jewel = alliance == PulsarAuto.Alliance.BLUE ? blueJewel : redJewel;
+            blueJewelArm = hardwareMap.servo.get("r1s2");
+            blueJewelArm.setDirection(Servo.Direction.REVERSE);
+            redJewelArm = hardwareMap.servo.get("r1s3");
+            redJewelArm.setDirection(Servo.Direction.REVERSE);
+            jewelArm = alliance == PulsarAuto.Alliance.BLUE ? blueJewelArm : redJewelArm;
+
+            blueJewelKicker = hardwareMap.servo.get("r1s4");
+            redJewelKicker = hardwareMap.servo.get("r1s5");
+            jewelKicker = alliance == PulsarAuto.Alliance.BLUE ? blueJewelKicker : redJewelKicker;
 
             relicClaw = hardwareMap.servo.get("r2s4");
             relicWrist = hardwareMap.servo.get("r2s3");
@@ -238,16 +246,16 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void jewelsUp(boolean sleep) {
-        servos.blueJewel.setPosition(BLUE_JEWEL_UP_POSITON);
-        servos.redJewel.setPosition(RED_JEWEL_UP_POSITON);
+        servos.blueJewelArm.setPosition(BLUE_JEWEL_UP_POSITON);
+        servos.redJewelArm.setPosition(RED_JEWEL_UP_POSITON);
         if (sleep) opMode.sleep(1000);
     }
     public void jewelDown(boolean sleep) {
-        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_DOWN_POSITON : RED_JEWEL_DOWN_POSITON);
+        servos.jewelArm.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_DOWN_POSITON : RED_JEWEL_DOWN_POSITON);
         if (sleep) opMode.sleep(1000);
     }
     public void jewelMoveAlt(boolean sleep) {
-        servos.jewel.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_ALT_DOWN_POSITON : RED_JEWEL_ALT_DOWN_POSITON);
+        servos.jewelArm.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_ALT_DOWN_POSITON : RED_JEWEL_ALT_DOWN_POSITON);
         if (sleep) this.opMode.sleep(1000);
     }
 

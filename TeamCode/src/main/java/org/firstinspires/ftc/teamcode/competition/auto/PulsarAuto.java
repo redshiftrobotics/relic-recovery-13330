@@ -3,10 +3,8 @@ package org.firstinspires.ftc.teamcode.competition.auto;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 import org.redshiftrobotics.lib.blockplacer.Col;
-import org.redshiftrobotics.lib.blockplacer.Cryptobox;
 import org.redshiftrobotics.lib.blockplacer.Glyph;
 import org.redshiftrobotics.lib.debug.DebugHelper;
 import org.redshiftrobotics.lib.vuforia.VuforiaController;
@@ -188,14 +186,14 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.addData("CryptoKey", targetColumn.toString());
     }
 
-    // Lower jewel before calling this method
+    // Lower jewelArm before calling this method
     private TargetJewelPosition detectJewel() {
         TargetJewelPosition targetJewelPosition = getTargetJewel();
 
         telemetry.addData("Back Jewel", targetJewelPosition.toString());
 
         if (targetJewelPosition == TargetJewelPosition.NONE) {
-            telemetry.addLine("Couldn't see jewel, moving to alternate position...");
+            telemetry.addLine("Couldn't see jewelArm, moving to alternate position...");
             telemetry.update();
 
             hw.jewelMoveAlt(true);
@@ -209,12 +207,10 @@ abstract public class PulsarAuto extends LinearOpMode {
     private void knockOffJewel(TargetJewelPosition targetJewelPosition) {
         if (targetJewelPosition == TargetJewelPosition.NONE) return;
 
-        double angle = targetJewelPosition == TargetJewelPosition.FRONT ? -10 : 10;
-
-        hw.turn(angle, 2000, 0.05);
-        scanCryptoKey();
+        hw.servos.jewelKicker.setPosition(targetJewelPosition == TargetJewelPosition.FRONT ? 0 : 1);
+        sleep(200);
+        hw.servos.jewelKicker.setPosition(0.5);
         hw.jewelsUp(true);
-        hw.turn(-angle, 2000, 0.05);
     }
 
     protected TargetJewelPosition getTargetJewel() {
