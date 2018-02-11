@@ -51,17 +51,18 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.update();
 
         hw = new PulsarRobotHardware(this, getAlliance());
+
+        vuforiaController = new VuforiaController(hw);
+
         hw.collectorUp();
         hw.jewelsUp(true);
         hw.setFlipperPosition(0);
-
-        vuforiaController = new VuforiaController(hw);
 
         telemetry.addLine("Ready");
         telemetry.update();
 
 
-        while (DebugHelper.isEnabled() && !opModeIsActive()) {
+        while (!opModeIsActive()) {
             telemetry.addLine("Ready");
             telemetry.addData("Default Col", targetColumn);
             telemetry.update();
@@ -77,7 +78,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         if (!opModeIsActive()) waitForStart();
 
         hw.storeCryptoboxTarget();
-        hw.setConveyorPower(1);
+        hw.conveyorOn();
 
         scanCryptoKey();
         sleep(1000);
@@ -93,44 +94,55 @@ abstract public class PulsarAuto extends LinearOpMode {
             hw.jewelsUp(true);
         }
 
-        if (targetColumn == Col.NONE && getAlliance() == Alliance.BLUE) {
-            hw.turn(5, 1000, 0.05);
-            scanCryptoKey();
-            hw.turn(-5, 1000, 0.05);
-        }
-
         if (targetColumn == Col.NONE) targetColumn = Col.CENTER;
 
         telemetry.addData("Target Column", targetColumn.toString());
         telemetry.update();
 
+        // Move to the cryptobox
+        if (getStartPosition() == StartPosition.A) {
+            hw.move(-1, 1200);
+            hw.strafe(1, 750);
+        } else {
+            hw.move(-1, 1150);
+            hw.turn(90, 2000);
+        }
+
+        hw.move(-1, 450);
+
+        depositGlyph();
+
+        if (isSimpleAuto()) return;
+
+        hw.collectorDown();
+
+        doCollectCycle();
+        targetColumn = targetColumn != Col.CENTER ? Col.CENTER : Col.LEFT;
+        doCollectCycle();
+    }
+
+    private void doCollectCycle() {
+        moveToGlyphPit(true);
+        collectGlyph();
+        collectGlyph();
+        moveToGlyphPit(false);
+        depositGlyph();
+    }
+
+    private void moveToGlyphPit(boolean forward) {
         switch (getStartPosition()) {
             case A:
-                autoA();
+                if (forward) {
+                    hw.strafe(1, 1500);
+                    hw.move(1, 3000);
+                } else {
+                    hw.move(-1, 3000);
+                    hw.strafe(-1, 1500);
+                }
                 break;
             case B:
-                autoB();
+                hw.move(forward ? 1 : -1, 1300);
                 break;
-        }
-    }
-
-    private void autoA() {
-        hw.move(-1, 1300);
-        hw.strafe(1, 750);
-        depositGlyph();
-    }
-
-    private void autoB() {
-        hw.move(-1, 1200);
-        hw.turn(90, 2000);
-        depositGlyph();
-
-        if (!isSimpleAuto()) {
-            hw.move(1, 3000);
-            collectGlyph();
-            collectGlyph();
-            hw.move(-1, 3000);
-            depositGlyph();
         }
     }
 
@@ -138,11 +150,12 @@ abstract public class PulsarAuto extends LinearOpMode {
         hw.conveyorOff();
         hw.collectorOn();
 
-        hw.move(1, 750);
+        hw.move(1, 400);
 
         Glyph.GlyphColor color = Glyph.GlyphColor.fromSensor(hw.colorSensors.glyph);
 
         if (lastGlyphColor == color) {
+            hw.move(-1, 400);
             hw.collectorOff();
             hw.turn(90, 1000);
             hw.collectorReverse();
@@ -155,10 +168,9 @@ abstract public class PulsarAuto extends LinearOpMode {
             sleep(2000);
             hw.collectorOff();
             lastGlyphColor = color;
+            hw.move(-1, 400);
         }
-        hw.move(-1, 750);
     }
-
 
     private void depositGlyph() {
         long strafeTime;
@@ -168,15 +180,15 @@ abstract public class PulsarAuto extends LinearOpMode {
         } else if (targetColumn == Col.CENTER) {
             strafeTime = 1000;
         } else {
-            strafeTime = 1250;
+            strafeTime = 1500;
         }
         if (strafeTime > 0) hw.strafe(1, strafeTime);
-        hw.setFlipperPosition(1);
+        hw.setFlipperPosition(0.9);
         sleep(1500);
-        hw.move(0.2, 1000);
+        hw.move(0.3, 1000, 200);
         hw.move(-1, 500, 0);
         hw.move(1, 350);
-        hw.strafe(-1, strafeTime);
+        if (strafeTime > 0) hw.strafe(-1, strafeTime);
     }
 
     private void scanCryptoKey() {
@@ -193,7 +205,7 @@ abstract public class PulsarAuto extends LinearOpMode {
         telemetry.addData("Back Jewel", targetJewelPosition.toString());
 
         if (targetJewelPosition == TargetJewelPosition.NONE) {
-            telemetry.addLine("Couldn't see jewelArm, moving to alternate position...");
+            telemetry.addLine("Couldn't see jewel, moving to alternate position...");
             telemetry.update();
 
             hw.jewelMoveAlt(true);
@@ -207,13 +219,15 @@ abstract public class PulsarAuto extends LinearOpMode {
     private void knockOffJewel(TargetJewelPosition targetJewelPosition) {
         if (targetJewelPosition == TargetJewelPosition.NONE) return;
 
-        hw.servos.jewelKicker.setPosition(targetJewelPosition == TargetJewelPosition.FRONT ? 0 : 1);
-        sleep(200);
-        hw.servos.jewelKicker.setPosition(0.5);
+        double angle = targetJewelPosition == TargetJewelPosition.FRONT ? -10 : 10;
+
+        hw.turn(angle, 2000, 0.05);
+        scanCryptoKey();
         hw.jewelsUp(true);
+        hw.turn(-angle, 2000, 0.05);
     }
 
-    protected TargetJewelPosition getTargetJewel() {
+    private TargetJewelPosition getTargetJewel() {
         int red = hw.colorSensors.jewel.red();
         int blue = hw.colorSensors.jewel.blue();
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.competition.auto.full;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 

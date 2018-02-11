@@ -170,8 +170,8 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ReadOperatorControls(Gamepad operator){
-        collectorLeft = operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
-        collectorRight = operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
+        collectorLeft = -operator.left_stick_y * COLLECTOR_POWER_LEFT_SCALAR;
+        collectorRight = -operator.right_stick_y * COLLECTOR_POWER_RIGHT_SCALAR;
 
         conveyorForward = !operator.b;
         collectionUp = operator.y;

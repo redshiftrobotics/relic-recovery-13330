@@ -20,12 +20,15 @@ import org.redshiftrobotics.lib.blockplacer.Col;
 import org.redshiftrobotics.lib.debug.DebugHelper;
 import org.redshiftrobotics.lib.pid.BumpAlignPIDController;
 import org.redshiftrobotics.lib.pid.PIDCalculator;
+import org.redshiftrobotics.lib.pid.PIDController;
 import org.redshiftrobotics.lib.pid.StraightPIDController;
 import org.redshiftrobotics.lib.pid.TurningPIDController;
 import org.redshiftrobotics.lib.pid.imu.IMU;
 import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 public class PulsarRobotHardware implements RobotHardware {
+    private static final boolean RUN_WITH_ENCODERS = false;
+
     public class Servos {
         public final Servo blueJewelArm;
         public final Servo redJewelArm;
@@ -51,8 +54,8 @@ public class PulsarRobotHardware implements RobotHardware {
             redJewelArm.setDirection(Servo.Direction.REVERSE);
             jewelArm = alliance == PulsarAuto.Alliance.BLUE ? blueJewelArm : redJewelArm;
 
-            blueJewelKicker = hardwareMap.servo.get("r1s4");
-            redJewelKicker = hardwareMap.servo.get("r1s5");
+            blueJewelKicker = hardwareMap.servo.get("r2s3");
+            redJewelKicker = hardwareMap.servo.get("r2s4");
             jewelKicker = alliance == PulsarAuto.Alliance.BLUE ? blueJewelKicker : redJewelKicker;
 
             relicClaw = hardwareMap.servo.get("r2s4");
@@ -61,7 +64,7 @@ public class PulsarRobotHardware implements RobotHardware {
 
             leftFlipper = hardwareMap.servo.get("r2s1");
             leftFlipper.setDirection(Servo.Direction.REVERSE);
-            rightFlipper = hardwareMap.servo.get("r2s2");
+            rightFlipper = hardwareMap.servo.get("r2s5");
 
             leftCollection = hardwareMap.servo.get("r1s1");
             leftCollection.setDirection(Servo.Direction.REVERSE);
@@ -94,6 +97,13 @@ public class PulsarRobotHardware implements RobotHardware {
 
             leftCollection = hardwareMap.dcMotor.get("r2m2");
             rightCollection = hardwareMap.dcMotor.get("r2m3");
+
+            if (RUN_WITH_ENCODERS) {
+                frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
 
         }
     }
@@ -178,6 +188,12 @@ public class PulsarRobotHardware implements RobotHardware {
     public final double BLUE_JEWEL_UP_POSITON = 0.5;
     public final double BLUE_JEWEL_DOWN_POSITON = 0.8;
     public final double BLUE_JEWEL_ALT_DOWN_POSITON = 0.75;
+    public final double RED_JEWEL_KICKER_FRONT_POSITION = 0;
+    public final double RED_JEWEL_KICKER_CENTER_POSITION = 0.55;
+    public final double RED_JEWEL_KICKER_BACK_POSITION = 1;
+    public final double BLUE_JEWEL_KICKER_FRONT_POSITION = 0;
+    public final double BLUE_JEWEL_KICKER_CENTER_POSITION = 0.55;
+    public final double BLUE_JEWEL_KICKER_BACK_POSITION = 1;
 
     public final double CONVEYOR_POWER = 0.8;
     public final double FLIPPER_POSITION_SCALAR = 0.8;
@@ -208,6 +224,9 @@ public class PulsarRobotHardware implements RobotHardware {
 
         straightPIDController = new StraightPIDController(this);
         turningPIDController = new TurningPIDController(this);
+
+        // Restart at the start of the OpMode
+        PIDController.pidCalculator.resetTarget();
 
         servos = new Servos(hardwareMap);
         motors = new Motors(hardwareMap);
@@ -246,12 +265,15 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void jewelsUp(boolean sleep) {
+        servos.redJewelKicker.setPosition(RED_JEWEL_KICKER_CENTER_POSITION);
+        servos.blueJewelKicker.setPosition(BLUE_JEWEL_KICKER_CENTER_POSITION);
         servos.blueJewelArm.setPosition(BLUE_JEWEL_UP_POSITON);
         servos.redJewelArm.setPosition(RED_JEWEL_UP_POSITON);
         if (sleep) opMode.sleep(1000);
     }
     public void jewelDown(boolean sleep) {
         servos.jewelArm.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_DOWN_POSITON : RED_JEWEL_DOWN_POSITON);
+        servos.jewelKicker.setPosition(alliance == PulsarAuto.Alliance.BLUE ? BLUE_JEWEL_KICKER_CENTER_POSITION : RED_JEWEL_KICKER_CENTER_POSITION);
         if (sleep) opMode.sleep(1000);
     }
     public void jewelMoveAlt(boolean sleep) {
@@ -272,10 +294,10 @@ public class PulsarRobotHardware implements RobotHardware {
         motors.rightCollection.setPower(power);
     }
     public void collectorOn() {
-        setCollectorPower(-1);
+        setCollectorPower(1);
     }
     public void collectorReverse() {
-        setCollectorPower(1);
+        setCollectorPower(-1);
     }
     public void collectorOff() {
         setCollectorPower(0);
