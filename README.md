@@ -1,3 +1,6 @@
+# THIS REPOSITORY HAS BEEN ARCHIVED
+## As 13330 Pulsar's 2017-2018 (Relic Recovery) season has ended, this repository has been archived.
+
 # Redshift Delta
 
 
