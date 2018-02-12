@@ -15,7 +15,6 @@ abstract public class PulsarAuto extends LinearOpMode {
 
     abstract protected Alliance getAlliance();
     abstract protected StartPosition getStartPosition();
-    protected boolean isSimpleAuto() { return false; }
 
     public enum Alliance {
         BLUE, RED;
@@ -41,6 +40,7 @@ abstract public class PulsarAuto extends LinearOpMode {
     protected PulsarRobotHardware hw;
 
     private VuforiaController vuforiaController;
+    private static double JEWEL_TURN_SCALAR = 0.3;
 
     /**
      * IMPORTANT: turning a positive number of degrees is CCW
@@ -55,7 +55,8 @@ abstract public class PulsarAuto extends LinearOpMode {
         vuforiaController = new VuforiaController(hw);
 
         hw.collectorUp();
-        hw.jewelsUp(true);
+        hw.servos.redJewelKicker.setPosition(hw.RED_JEWEL_INIT_POSITON);
+        hw.servos.blueJewelKicker.setPosition(hw.BLUE_JEWEL_INIT_POSITON);
         hw.setFlipperPosition(0);
 
         telemetry.addLine("Ready");
@@ -76,6 +77,8 @@ abstract public class PulsarAuto extends LinearOpMode {
         }
 
         if (!opModeIsActive()) waitForStart();
+
+        hw.jewelsUp(false);
 
         hw.storeCryptoboxTarget();
         hw.conveyorOn();
@@ -221,14 +224,15 @@ abstract public class PulsarAuto extends LinearOpMode {
 
         double angle = targetJewelPosition == TargetJewelPosition.FRONT ? -10 : 10;
 
-        hw.turn(angle, 2000, 0.05);
+        hw.turn(angle, 2000, JEWEL_TURN_SCALAR);
         scanCryptoKey();
         hw.jewelsUp(true);
-        hw.turn(-angle, 2000, 0.05);
+        hw.turn(-angle, 2000, JEWEL_TURN_SCALAR);
     }
 
     private TargetJewelPosition getTargetJewel() {
-        int red = hw.colorSensors.jewel.red();
+        return TargetJewelPosition.FRONT;
+        /*int red = hw.colorSensors.jewel.red();
         int blue = hw.colorSensors.jewel.blue();
 
         Alliance backJewel;
@@ -238,6 +242,6 @@ abstract public class PulsarAuto extends LinearOpMode {
         else return TargetJewelPosition.NONE;
 
         if (backJewel == getAlliance()) return TargetJewelPosition.FRONT;
-        else return TargetJewelPosition.BACK;
+        else return TargetJewelPosition.BACK; */
     }
 }

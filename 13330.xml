@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <LynxUsbDevice name="Expansion Hub Portal 1" serialNumber="DQ189SQ9" parentModuleAddress="1">
+        <LynxModule name="REV 1" port="1">
+            <NeveRest40Gearmotor name="r1m0" port="0" />
+            <NeveRest40Gearmotor name="r1m1" port="1" />
+            <NeveRest40Gearmotor name="r1m2" port="2" />
+            <NeveRest40Gearmotor name="r1m3" port="3" />
+            <Servo name="r1s0" port="0" />
+            <Servo name="r1s1" port="1" />
+            <Servo name="r1s2" port="2" />
+            <Servo name="r1s3" port="3" />
+            <Servo name="r1s4" port="4" />
+            <Servo name="r1s5" port="5" />
+            <ColorSensor name="r1c1" port="0" bus="1" />
+            <ColorSensor name="r1c2" port="0" bus="2" />
+            <LynxEmbeddedIMU name="imu1" port="0" bus="0" />
+            <LynxColorSensor name="r1c0" port="1" bus="0" />
+        </LynxModule>
+        <LynxModule name="REV 2" port="2">
+            <RevRoboticsCoreHexMotor name="r2m0" port="0" />
+            <RevRoboticsCoreHexMotor name="r2m1" port="1" />
+            <RevRoboticsCoreHexMotor name="r2m2" port="2" />
+            <RevRoboticsCoreHexMotor name="r2m3" port="3" />
+            <Servo name="r2s0" port="0" />
+            <Servo name="r2s1" port="1" />
+            <Servo name="r2s2" port="2" />
+            <Servo name="r2s3" port="3" />
+            <Servo name="r2s4" port="4" />
+            <Servo name="r2s5" port="5" />
+            <LynxColorSensor name="r2c1" port="0" bus="1" />
+            <LynxColorSensor name="r2c2" port="0" bus="2" />
+            <LynxColorSensor name="r2c3" port="0" bus="3" />
+            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
+            <LynxColorSensor name="r2c0" port="1" bus="0" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>

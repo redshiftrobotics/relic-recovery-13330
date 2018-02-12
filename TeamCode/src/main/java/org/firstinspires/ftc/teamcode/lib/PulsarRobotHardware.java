@@ -182,10 +182,12 @@ public class PulsarRobotHardware implements RobotHardware {
     private static final double TURN_ANGLE_SCALAR = 1;
 
 
-    public final double RED_JEWEL_UP_POSITON = 0.6;
+    public final double RED_JEWEL_INIT_POSITON = 0.7;
+    public final double RED_JEWEL_UP_POSITION = 0.6;
     public final double RED_JEWEL_DOWN_POSITON = 0;
     public final double RED_JEWEL_ALT_DOWN_POSITON = 0.05;
-    public final double BLUE_JEWEL_UP_POSITON = 0.5;
+    public final double BLUE_JEWEL_INIT_POSITON = 0.45;
+    public final double BLUE_JEWEL_UP_POSITION = 0.5;
     public final double BLUE_JEWEL_DOWN_POSITON = 0.8;
     public final double BLUE_JEWEL_ALT_DOWN_POSITON = 0.75;
     public final double RED_JEWEL_KICKER_FRONT_POSITION = 0;
@@ -265,10 +267,8 @@ public class PulsarRobotHardware implements RobotHardware {
     }
 
     public void jewelsUp(boolean sleep) {
-        servos.redJewelKicker.setPosition(RED_JEWEL_KICKER_CENTER_POSITION);
-        servos.blueJewelKicker.setPosition(BLUE_JEWEL_KICKER_CENTER_POSITION);
-        servos.blueJewelArm.setPosition(BLUE_JEWEL_UP_POSITON);
-        servos.redJewelArm.setPosition(RED_JEWEL_UP_POSITON);
+        servos.blueJewelArm.setPosition(BLUE_JEWEL_UP_POSITION);
+        servos.redJewelArm.setPosition(RED_JEWEL_UP_POSITION);
         if (sleep) opMode.sleep(1000);
     }
     public void jewelDown(boolean sleep) {
@@ -412,8 +412,8 @@ public class PulsarRobotHardware implements RobotHardware {
     public void turn(double angle, long time) {
         turningPIDController.turn(angle * TURN_ANGLE_SCALAR * alliance.getFlipFactor(), time);
     }
-    public void turn(double angle, long time, double powerConstant) {
-        turningPIDController.turn(angle * TURN_ANGLE_SCALAR * alliance.getFlipFactor(), time, powerConstant);
+    public void turn(double angle, long time, double powerScalar) {
+        turningPIDController.turn(angle * TURN_ANGLE_SCALAR * alliance.getFlipFactor(), time, powerScalar);
     }
 
     /**

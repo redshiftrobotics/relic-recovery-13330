@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 
+@Disabled
 @Autonomous(name = "Red B", group = "Final Auto")
 public class PulsarAutoRedB extends PulsarAuto {
     @Override

@@ -3,22 +3,16 @@ package org.firstinspires.ftc.teamcode.competition.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.competition.auto.PulsarAuto;
 import org.firstinspires.ftc.teamcode.lib.PulsarRobotHardware;
 import org.redshiftrobotics.lib.blockplacer.Col;
-import org.redshiftrobotics.lib.pid.imu.IMU;
-import org.redshiftrobotics.lib.pid.imu.IMUWrapper;
 
 @TeleOp(name="Pulsar State Teleop", group="Pulsar")
 public class PulsarStateTeleop extends LinearOpMode {
-    private static final boolean USE_PID = false;
     private static final boolean RELIC = true; // TODO: actually map relicPower to a control
 
     private PulsarRobotHardware hw;
-
-    private IMU imu;
 
     private boolean hasHadInput = false;
 
@@ -72,9 +66,6 @@ public class PulsarStateTeleop extends LinearOpMode {
         telemetry.update();
 
         hw = new PulsarRobotHardware(this, PulsarAuto.Alliance.BLUE); // TODO: we actually need this now
-        imu = new IMUWrapper(hw.hwIMU);
-
-        hw.jewelsUp(false); // Don't sleep, we want to be able to start ASAP
 
         telemetry.addLine("Ready for TeleOp (at State)!");
         telemetry.addLine();
@@ -82,6 +73,8 @@ public class PulsarStateTeleop extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+
+        hw.jewelsUp(false); // Don't sleep, we want to be able to start ASAP
 
         while (opModeIsActive()) {
             CheckForInputPresence();
@@ -99,6 +92,7 @@ public class PulsarStateTeleop extends LinearOpMode {
 
     private void CheckForInputPresence() {
         hasHadInput = hasHadInput || !gamepad1.atRest() || !gamepad2.atRest();
+        hasHadInput = true; // FIXME
     }
 
     private void UpdateMotors(){
@@ -186,28 +180,6 @@ public class PulsarStateTeleop extends LinearOpMode {
     }
 
     private void ComputePLoop() {
-        if(USE_PID) {
-            lastAngle = currentAngle;
-            currentAngle = imu.getAngularRotationX();
-
-            isTurning = Math.abs(lastAngle - currentAngle) < 1 && anglePower != 0;
-
-            if (isTurning) {
-                targetAngle = currentAngle;
-                pPower = 0.0;
-            } else {
-                if (currentAngle + 360.0 - targetAngle <= 180.0) {
-                    pPower = (currentAngle - targetAngle + 360.0) * pConstant;
-                } else if (targetAngle + 360.0 - currentAngle <= 180.0) {
-                    pPower = (targetAngle - currentAngle + 360.0) * -1.0 * pConstant;
-                } else if (currentAngle - targetAngle <= 180.0) {
-                    pPower = (currentAngle - targetAngle) * pConstant;
-                }
-            }
-
-            pPower = Range.clip(pPower / -180.0, -1.0, 1.0);
-        }
-
         telemetry.addData("Movement", "(" + xDrivePower + ", " + yDrivePower + ")");
 
         flPower = (yDrivePower - xDrivePower) * movementScalar + (pPower + anglePower) * rotationScalar;
